@@ -576,5 +576,3 @@ Selecciona una opción:
     </div>
   );
 }
-
-
