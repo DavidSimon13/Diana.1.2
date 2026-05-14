@@ -154,10 +154,31 @@ Validaciones:
     "Necesito clonar plantilla IAM"
   ];
 
+  const themeColors = {
+  "BBVA Premium": {
+    bg: "linear-gradient(135deg,#020817,#061428,#082f49)",
+    accent: "#38bdf8"
+  },
+  "Oscuro Profesional": {
+    bg: "linear-gradient(135deg,#000000,#111827,#1f2937)",
+    accent: "#60a5fa"
+  },
+  "Turquesa Tecnológico": {
+    bg: "linear-gradient(135deg,#022c22,#064e3b,#0f766e)",
+    accent: "#2dd4bf"
+  },
+  "Púrpura Creativo": {
+    bg: "linear-gradient(135deg,#1e032e,#3b0764,#581c87)",
+    accent: "#c084fc"
+  }
+};
+
+const currentTheme = themeColors[theme];
+  
   const styles = {
     page: {
       minHeight: "100vh",
-      background: "linear-gradient(135deg,#020817,#061428,#082f49)",
+      background: currentTheme.bg,
       color: "white",
       fontFamily: "Inter, Arial, sans-serif",
       display: "flex"
@@ -185,11 +206,13 @@ Validaciones:
       padding: "22px",
       boxShadow: "0 0 30px rgba(56,189,248,.12)"
     },
+    
     cyan: {
-      color: "#38bdf8"
+      color: currentTheme.accent
     },
+    
     button: {
-      background: "#38bdf8",
+      background: currentTheme.accent,
       color: "black",
       border: "none",
       borderRadius: "16px",
@@ -206,7 +229,40 @@ Validaciones:
       cursor: "pointer"
     }
   };
+function startGuide() {
+  setMessages((prev) => [
+    ...prev,
+    {
+      role: "diana",
+      text: `📘 Modo guía activado.
 
+Te voy a acompañar paso a paso.
+
+1. Primero identifica el proceso que necesitas.
+2. Después te mostraré el manual o link correspondiente.
+3. Luego te diré qué llenar.
+4. Al final validaremos que no falte información.
+
+Selecciona una opción:
+- Teradata
+- VPN
+- Citrix
+- IAM
+- Formato DML`
+    }
+  ]);
+}
+
+function openLink(type) {
+  const links = {
+    vpn: "https://docs.google.com/presentation/d/1gOInm65Oesu6MtUaAefto_uc2FJsB4H8GF6vZxt_xi4/edit?slide=id.g3356b0b5634_127_70#slide=id.g3356b0b5634_127_70",
+    teradata: "https://docs.google.com",
+    iam: "https://docs.google.com",
+    dml: "https://docs.google.com"
+  };
+
+  window.open(links[type], "_blank", "noopener,noreferrer");
+}
   return (
     <div style={styles.page}>
       <aside style={styles.sidebar}>
@@ -370,9 +426,9 @@ Validaciones:
                   </pre>
 
                   {m.role === "diana" && (
-                    <button style={styles.button}>
+                    <button onClick={startGuide} style={styles.button}> 
                       Da click si deseas que te guíe →
-                    </button>
+                    </button> 
                   )}
                 </div>
               </div>
@@ -416,6 +472,28 @@ Validaciones:
                   {action}
                 </button>
               ))}
+
+              
+              <button
+  onClick={() => openLink("vpn")}
+  style={{ ...styles.ghostButton, marginTop: "10px" }}
+>
+  📘 Abrir guía VPN
+</button>
+
+<button
+  onClick={() => openLink("teradata")}
+  style={{ ...styles.ghostButton, marginTop: "10px" }}
+>
+  📘 Abrir manual Teradata
+</button>
+
+<button
+  onClick={() => openLink("dml")}
+  style={{ ...styles.ghostButton, marginTop: "10px" }}
+>
+  📄 Abrir formato DML
+</button>
             </div>
           </div>
 
