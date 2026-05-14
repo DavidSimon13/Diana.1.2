@@ -14,6 +14,27 @@ export default function App() {
 
   const avatar = "/diana-avatar.png";
 
+  const themeColors = {
+    "BBVA Premium": {
+      bg: "linear-gradient(135deg,#020817,#061428,#082f49)",
+      accent: "#38bdf8"
+    },
+    "Oscuro Profesional": {
+      bg: "linear-gradient(135deg,#000000,#111827,#1f2937)",
+      accent: "#60a5fa"
+    },
+    "Turquesa Tecnológico": {
+      bg: "linear-gradient(135deg,#022c22,#064e3b,#0f766e)",
+      accent: "#2dd4bf"
+    },
+    "Púrpura Creativo": {
+      bg: "linear-gradient(135deg,#1e032e,#3b0764,#581c87)",
+      accent: "#c084fc"
+    }
+  };
+
+  const currentTheme = themeColors[theme];
+
   function responder(txt) {
     const t = txt.toLowerCase();
 
@@ -145,6 +166,78 @@ Validaciones:
     setMessage("");
   }
 
+  function startGuide() {
+    const lastUserMessage = [...messages].reverse().find((m) => m.role === "user");
+    const context = lastUserMessage ? lastUserMessage.text.toLowerCase() : "";
+
+    let guideText = `📘 Modo guía activado.
+
+Te voy a acompañar paso a paso.`;
+
+    if (context.includes("teradata")) {
+      guideText += `
+
+Proceso detectado: Alta Usuario Teradata
+
+1. Valida que exista una licencia para reasignación.
+2. Solicita Vo.Bo. del usuario que cede.
+3. Solicita Vo.Bo. del N4.
+4. Crea el role o solicitud correspondiente.
+5. Levanta el alta en Helix.
+6. Agrega el comentario del jefe.
+7. Valida el acceso por Citrix.`;
+    } else if (context.includes("vpn")) {
+      guideText += `
+
+Proceso detectado: VPN
+
+1. Cierra VPN.
+2. Reinicia el equipo.
+3. Abre Cisco nuevamente.
+4. Intenta conectarte.
+5. Si persiste, contacta soporte VPN.
+6. Si es nueva alta, abre la guía VPN.`;
+    } else if (context.includes("citrix") || context.includes("bloqueo")) {
+      guideText += `
+
+Proceso detectado: Citrix / Bloqueo
+
+1. Confirma si el problema es bloqueo de usuario.
+2. Reporta al número 55 5522 61190.
+3. Sigue instrucciones de soporte.
+4. Valida nuevamente el acceso.`;
+    } else {
+      guideText += `
+
+Selecciona una opción:
+- Teradata
+- VPN
+- Citrix
+- IAM
+- Formato DML`;
+    }
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "diana",
+        text: guideText
+      }
+    ]);
+  }
+
+  function openLink(type) {
+    const links = {
+      vpn:
+        "https://docs.google.com/presentation/d/1gOInm65Oesu6MtUaAefto_uc2FJsB4H8GF6vZxt_xi4/edit?slide=id.g3356b0b5634_127_70#slide=id.g3356b0b5634_127_70",
+      teradata: "https://docs.google.com",
+      iam: "https://docs.google.com",
+      dml: "https://docs.google.com"
+    };
+
+    window.open(links[type], "_blank", "noopener,noreferrer");
+  }
+
   const quickActions = [
     "Necesito dar de alta un usuario en Teradata",
     "Hazme el correo VoBo",
@@ -154,27 +247,6 @@ Validaciones:
     "Necesito clonar plantilla IAM"
   ];
 
-  const themeColors = {
-  "BBVA Premium": {
-    bg: "linear-gradient(135deg,#020817,#061428,#082f49)",
-    accent: "#38bdf8"
-  },
-  "Oscuro Profesional": {
-    bg: "linear-gradient(135deg,#000000,#111827,#1f2937)",
-    accent: "#60a5fa"
-  },
-  "Turquesa Tecnológico": {
-    bg: "linear-gradient(135deg,#022c22,#064e3b,#0f766e)",
-    accent: "#2dd4bf"
-  },
-  "Púrpura Creativo": {
-    bg: "linear-gradient(135deg,#1e032e,#3b0764,#581c87)",
-    accent: "#c084fc"
-  }
-};
-
-const currentTheme = themeColors[theme];
-  
   const styles = {
     page: {
       minHeight: "100vh",
@@ -186,7 +258,7 @@ const currentTheme = themeColors[theme];
     sidebar: {
       width: "290px",
       background: "#020b16",
-      borderRight: "1px solid #164e63",
+      borderRight: `1px solid ${currentTheme.accent}`,
       padding: "24px",
       display: "flex",
       flexDirection: "column",
@@ -201,16 +273,14 @@ const currentTheme = themeColors[theme];
     },
     card: {
       background: "rgba(8,26,47,.9)",
-      border: "1px solid #164e63",
+      border: `1px solid ${currentTheme.accent}`,
       borderRadius: "24px",
       padding: "22px",
-      boxShadow: "0 0 30px rgba(56,189,248,.12)"
+      boxShadow: `0 0 30px ${currentTheme.accent}33`
     },
-    
     cyan: {
       color: currentTheme.accent
     },
-    
     button: {
       background: currentTheme.accent,
       color: "black",
@@ -223,46 +293,13 @@ const currentTheme = themeColors[theme];
     ghostButton: {
       background: "#0b2747",
       color: "white",
-      border: "1px solid #164e63",
+      border: `1px solid ${currentTheme.accent}`,
       borderRadius: "16px",
       padding: "12px 16px",
       cursor: "pointer"
     }
   };
-function startGuide() {
-  setMessages((prev) => [
-    ...prev,
-    {
-      role: "diana",
-      text: `📘 Modo guía activado.
 
-Te voy a acompañar paso a paso.
-
-1. Primero identifica el proceso que necesitas.
-2. Después te mostraré el manual o link correspondiente.
-3. Luego te diré qué llenar.
-4. Al final validaremos que no falte información.
-
-Selecciona una opción:
-- Teradata
-- VPN
-- Citrix
-- IAM
-- Formato DML`
-    }
-  ]);
-}
-
-function openLink(type) {
-  const links = {
-    vpn: "https://docs.google.com/presentation/d/1gOInm65Oesu6MtUaAefto_uc2FJsB4H8GF6vZxt_xi4/edit?slide=id.g3356b0b5634_127_70#slide=id.g3356b0b5634_127_70",
-    teradata: "https://docs.google.com",
-    iam: "https://docs.google.com",
-    dml: "https://docs.google.com"
-  };
-
-  window.open(links[type], "_blank", "noopener,noreferrer");
-}
   return (
     <div style={styles.page}>
       <aside style={styles.sidebar}>
@@ -271,16 +308,22 @@ function openLink(type) {
             <img
               src={avatar}
               alt="Diana"
+              onError={(e) => {
+                e.currentTarget.src =
+                  "https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=600&auto=format&fit=crop";
+              }}
               style={{
                 width: "64px",
                 height: "64px",
                 borderRadius: "20px",
                 objectFit: "cover",
-                border: "2px solid #38bdf8"
+                border: `2px solid ${currentTheme.accent}`
               }}
             />
             <div>
-              <h2 style={{ margin: 0, color: "#38bdf8" }}>Asistente Diana</h2>
+              <h2 style={{ margin: 0, color: currentTheme.accent }}>
+                Asistente Diana
+              </h2>
               <p style={{ margin: "4px 0", color: "#94a3b8" }}>
                 Copiloto BBVA
               </p>
@@ -308,7 +351,9 @@ function openLink(type) {
         </div>
 
         <div style={styles.card}>
-          <h3 style={{ color: "#38bdf8", marginTop: 0 }}>⚙️ Configuración</h3>
+          <h3 style={{ color: currentTheme.accent, marginTop: 0 }}>
+            ⚙️ Configuración
+          </h3>
 
           <label>Tema</label>
           <select
@@ -322,7 +367,7 @@ function openLink(type) {
               borderRadius: "12px",
               background: "#0b2747",
               color: "white",
-              border: "1px solid #164e63"
+              border: `1px solid ${currentTheme.accent}`
             }}
           >
             <option>BBVA Premium</option>
@@ -332,7 +377,14 @@ function openLink(type) {
           </select>
 
           <label>Color de piel</label>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px", marginTop: "8px" }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr",
+              gap: "8px",
+              marginTop: "8px"
+            }}
+          >
             {["Original", "Moreno claro", "Claro"].map((tone) => (
               <button
                 key={tone}
@@ -341,8 +393,8 @@ function openLink(type) {
                   ...styles.ghostButton,
                   border:
                     skinTone === tone
-                      ? "2px solid #38bdf8"
-                      : "1px solid #164e63"
+                      ? `2px solid ${currentTheme.accent}`
+                      : `1px solid ${currentTheme.accent}`
                 }}
               >
                 {tone}
@@ -359,13 +411,17 @@ function openLink(type) {
               <img
                 src={avatar}
                 alt="Diana avatar"
+                onError={(e) => {
+                  e.currentTarget.src =
+                    "https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=600&auto=format&fit=crop";
+                }}
                 style={{
                   width: "180px",
                   height: "180px",
                   borderRadius: "50%",
                   objectFit: "cover",
-                  border: "3px solid #38bdf8",
-                  boxShadow: "0 0 35px rgba(56,189,248,.45)"
+                  border: `3px solid ${currentTheme.accent}`,
+                  boxShadow: `0 0 35px ${currentTheme.accent}80`
                 }}
               />
               <div>
@@ -373,8 +429,8 @@ function openLink(type) {
                   👋 Hola, soy <span style={styles.cyan}>Diana</span>
                 </h1>
                 <p style={{ fontSize: "18px", color: "#cbd5e1" }}>
-                  Tu asistente inteligente BBVA para procesos, accesos,
-                  soporte y generación automática.
+                  Tu asistente inteligente BBVA para procesos, accesos, soporte
+                  y generación automática.
                 </p>
                 <div
                   style={{
@@ -409,7 +465,7 @@ function openLink(type) {
                     padding: "18px",
                     borderRadius: "22px",
                     background: m.role === "user" ? "#123d6b" : "#031525",
-                    border: "1px solid #164e63"
+                    border: `1px solid ${currentTheme.accent}`
                   }}
                 >
                   <strong style={styles.cyan}>
@@ -426,9 +482,9 @@ function openLink(type) {
                   </pre>
 
                   {m.role === "diana" && (
-                    <button onClick={startGuide} style={styles.button}> 
+                    <button onClick={startGuide} style={styles.button}>
                       Da click si deseas que te guíe →
-                    </button> 
+                    </button>
                   )}
                 </div>
               </div>
@@ -449,7 +505,7 @@ function openLink(type) {
                 borderRadius: "18px",
                 background: "#0b2747",
                 color: "white",
-                border: "1px solid #164e63",
+                border: `1px solid ${currentTheme.accent}`,
                 outline: "none"
               }}
             />
@@ -473,36 +529,39 @@ function openLink(type) {
                 </button>
               ))}
 
-              
+              <button onClick={() => openLink("vpn")} style={styles.ghostButton}>
+                📘 Abrir guía VPN
+              </button>
+
               <button
-  onClick={() => openLink("vpn")}
-  style={{ ...styles.ghostButton, marginTop: "10px" }}
->
-  📘 Abrir guía VPN
-</button>
+                onClick={() => openLink("teradata")}
+                style={styles.ghostButton}
+              >
+                📘 Abrir manual Teradata
+              </button>
 
-<button
-  onClick={() => openLink("teradata")}
-  style={{ ...styles.ghostButton, marginTop: "10px" }}
->
-  📘 Abrir manual Teradata
-</button>
-
-<button
-  onClick={() => openLink("dml")}
-  style={{ ...styles.ghostButton, marginTop: "10px" }}
->
-  📄 Abrir formato DML
-</button>
+              <button onClick={() => openLink("dml")} style={styles.ghostButton}>
+                📄 Abrir formato DML
+              </button>
             </div>
           </div>
 
           <div style={{ ...styles.card, marginBottom: "18px" }}>
             <h3 style={styles.cyan}>📌 Generadores</h3>
-            {["Correo VoBo", "Comentario Helix", "Historia Jira", "Formato DML", "Plantilla IAM"].map((g) => (
-              <div key={g} style={{ ...styles.ghostButton, marginBottom: "8px" }}>
+            {[
+              "Correo VoBo",
+              "Comentario Helix",
+              "Historia Jira",
+              "Formato DML",
+              "Plantilla IAM"
+            ].map((g) => (
+              <button
+                key={g}
+                onClick={() => send(g)}
+                style={{ ...styles.ghostButton, marginBottom: "8px", width: "100%" }}
+              >
                 {g}
-              </div>
+              </button>
             ))}
           </div>
 
