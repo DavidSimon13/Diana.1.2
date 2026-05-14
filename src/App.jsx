@@ -12,8 +12,7 @@ export default function App() {
     }
   ]);
 
-  const avatar =
-    "https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=600&auto=format&fit=crop";
+  const avatar = "/diana-avatar.png";
 
   function responder(txt) {
     const t = txt.toLowerCase();
