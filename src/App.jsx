@@ -564,7 +564,6 @@ Selecciona una opción:
               </button>
             ))}
           </div>
-
           <div style={styles.card}>
             <h3 style={styles.cyan}>🟢 Estado de servicios</h3>
             <p>Teradata: Operativo</p>
