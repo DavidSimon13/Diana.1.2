@@ -4,58 +4,63 @@ export default function App() {
   const [message, setMessage] = useState("");
   const [skinTone, setSkinTone] = useState("Original");
   const [theme, setTheme] = useState("BBVA Premium");
+  const [guideActive, setGuideActive] = useState(false);
+  const [guideStep, setGuideStep] = useState(0);
   const [messages, setMessages] = useState([
     {
-      role: "diana",
+      role: "diana","Hola diana", "necesito que me ayudes en algo"
       text:
+        "en que te puedo ayudar"
         "Hola 👋 Soy Diana, tu copiloto inteligente BBVA. Estoy aquí para ayudarte con procesos, soporte, accesos, formatos, Jira, Helix, VPN, Citrix, IAM y Teradata."
     }
   ]);
 
-  const avatar = "/diana-avatar.png";
+  const avatars = {
+  "Original": "/diana-avatar.png",
+  "Moreno claro": "/diana-avatar-morena.png",
+  "Claro": "/diana-avatar-clara.png"
+};
+
+const avatar = avatars[skinTone];
 
   const themeColors = {
     "BBVA Premium": {
       bg: "linear-gradient(135deg,#020817,#061428,#082f49)",
-      accent: "#38bdf8"
+      accent: "#38bdf8",
+      glow: "#38bdf8"
     },
+    
     "Oscuro Profesional": {
       bg: "linear-gradient(135deg,#000000,#111827,#1f2937)",
-      accent: "#60a5fa"
+      accent: "#60a5fa",
+      glow: "#60a5fa"
     },
+    
     "Turquesa Tecnológico": {
       bg: "linear-gradient(135deg,#022c22,#064e3b,#0f766e)",
-      accent: "#2dd4bf"
+      accent: "#2dd4bf",
+      glow: "#2dd4bf"
     },
+    
     "Púrpura Creativo": {
       bg: "linear-gradient(135deg,#1e032e,#3b0764,#581c87)",
-      accent: "#c084fc"
+      accent: "#c084fc",
+      glow: "#c084fc"
     }
   };
 
   const currentTheme = themeColors[theme];
 
   function responder(txt) {
-    const t = txt.toLowerCase();
+    const t = txt
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
 
-    if (t.includes("correo") && t.includes("vobo")) {
-      return `📧 Correo Vo.Bo. generado:
-
-Hola [NOMBRE DEL JEFE] buen día, espero que se encuentren muy bien.
-
-El motivo de este correo es solicitar tu amable Vo.Bo. para levantar las solicitudes de creación de rol en JIRA y posteriormente el alta de usuario en Helix.
-
-Estos movimientos son por reasignación:
-[Usuario a quien se hará la reasignación]
-
-Saludos.
-
-Datos:
--IP: 150.100.43.100
--Instancia: KLARMXPU/KLARMXPV
--Profile a asignar: PLAOMXP_LUSER
--Role: RLARMXP_ENDUSR_MI05779`;
-    }
+   if (
+     (t.includes("correo") || t.includes("mensaje") || t.includes("generame") || t.includes("genérame")) &&
+     (t.includes("vobo") || t.includes("vo.bo") || t.includes("vo.bo.") || t.includes("vo bo"))
+   ) {
 
     if (t.includes("teradata")) {
       return `⚠️ Alta Usuario Teradata
@@ -166,65 +171,101 @@ Validaciones:
     setMessage("");
   }
 
-  function startGuide() {
+  function getGuideSteps() {
     const lastUserMessage = [...messages].reverse().find((m) => m.role === "user");
     const context = lastUserMessage ? lastUserMessage.text.toLowerCase() : "";
 
-    let guideText = `📘 Modo guía activado.
+  if (context.includes("teradata")) {
+    return [
+      "📘 Guía Teradata - Paso 1\n\nPrimero confirma si el usuario ya cuenta con licencia o si será reasignación.\n\nRecuerda: en Teradata ya no hay altas nuevas; solo reasignación.",
+      "📘 Guía Teradata - Paso 2\n\nSolicita el Vo.Bo. del usuario que cede la licencia y del N4 del usuario que recibirá la licencia.",
+      "📘 Guía Teradata - Paso 3\n\nCon los Vo.Bo. listos, genera el correo y comentario Helix.\n\nDatos estándar:\nIP: 150.100.43.100\nInstancia: KLARMXPU/KLARMXPV\nProfile: PLAOMXP_LUSER\nRole: RLARMXP_ENDUSR_MI05779",
+      "📘 Guía Teradata - Paso 4\n\nLevanta el Jira o solicitud correspondiente y después valida el acceso por Citrix.",
+      "✅ Guía Teradata finalizada.\n\nYa tienes los pasos principales para continuar."
+    ];
+  }
 
-Te voy a acompañar paso a paso.`;
+  if (context.includes("vpn")) {
+    return [
+      "🔐 Guía VPN - Paso 1\n\nPrimero cierra la VPN completamente.",
+      "🔐 Guía VPN - Paso 2\n\nReinicia el equipo y vuelve a abrir Cisco.",
+      "🔐 Guía VPN - Paso 3\n\nIntenta conectarte nuevamente.",
+      "🔐 Guía VPN - Paso 4\n\nSi continúa el error, contacta soporte:\nvpn.soporte.mx@bbva.com\n55 5226 1190\n55 5621 3434 ext. 61190 opción 1",
+      "🏢 Si no se soluciona:\nParque BBVA piso 8\nTorre BBVA piso 14"
+    ];
+  }
 
-    if (context.includes("teradata")) {
-      guideText += `
+  if (context.includes("citrix") || context.includes("bloqueo")) {
+    return [
+      "🖥️ Guía Citrix - Paso 1\n\nConfirma si el problema es bloqueo de usuario o acceso Citrix.",
+      "🖥️ Guía Citrix - Paso 2\n\nReporta el bloqueo al número:\n55 5522 61190",
+      "🖥️ Guía Citrix - Paso 3\n\nSigue las instrucciones de soporte y valida nuevamente tu acceso.",
+      "✅ Guía Citrix finalizada."
+    ];
+  }
 
-Proceso detectado: Alta Usuario Teradata
+  if (context.includes("dml") || context.includes("formato")) {
+    return [
+      "📄 Guía Formato DML - Paso 1\n\nSelecciona el manejador: DB2, Oracle, Teradata, Sybase, Informix o SQL.",
+      "📄 Guía Formato DML - Paso 2\n\nEn SOLICITANTE coloca la M del usuario.",
+      "📄 Guía Formato DML - Paso 3\n\nEn ROL coloca el rol y la M del usuario.",
+      "📄 Guía Formato DML - Paso 4\n\nEn DATOS SOLO PARA USUARIO M o XM coloca:\nNombre del equipo\nUsuario de red\nCorreo del usuario.",
+      "✅ Guía Formato DML finalizada."
+    ];
+  }
 
-1. Valida que exista una licencia para reasignación.
-2. Solicita Vo.Bo. del usuario que cede.
-3. Solicita Vo.Bo. del N4.
-4. Crea el role o solicitud correspondiente.
-5. Levanta el alta en Helix.
-6. Agrega el comentario del jefe.
-7. Valida el acceso por Citrix.`;
-    } else if (context.includes("vpn")) {
-      guideText += `
+  return [
+    "📘 Modo guía activado.\n\nDime primero qué proceso necesitas:\nTeradata, VPN, Citrix, IAM o Formato DML."
+  ];
+}
 
-Proceso detectado: VPN
+function startGuide() {
+  const steps = getGuideSteps();
 
-1. Cierra VPN.
-2. Reinicia el equipo.
-3. Abre Cisco nuevamente.
-4. Intenta conectarte.
-5. Si persiste, contacta soporte VPN.
-6. Si es nueva alta, abre la guía VPN.`;
-    } else if (context.includes("citrix") || context.includes("bloqueo")) {
-      guideText += `
+  setGuideActive(true);
+  setGuideStep(0);
 
-Proceso detectado: Citrix / Bloqueo
-
-1. Confirma si el problema es bloqueo de usuario.
-2. Reporta al número 55 5522 61190.
-3. Sigue instrucciones de soporte.
-4. Valida nuevamente el acceso.`;
-    } else {
-      guideText += `
-
-Selecciona una opción:
-- Teradata
-- VPN
-- Citrix
-- IAM
-- Formato DML`;
+  setMessages((prev) => [
+    ...prev,
+    {
+      role: "diana",
+      text: steps[0],
+      guide: true,
+      options: ["Teradata", "VPN", "Citrix", "IAM", "Formato DML"]
     }
+  ]);
+}
+
+function nextGuideStep() {
+  const steps = getGuideSteps();
+  const nextStep = guideStep + 1;
+
+  if (nextStep >= steps.length) {
+    setGuideActive(false);
+    setGuideStep(0);
 
     setMessages((prev) => [
       ...prev,
       {
         role: "diana",
-        text: guideText
+        text: "✅ Guía terminada. Si necesitas otro proceso, escríbelo y te acompaño paso a paso."
       }
     ]);
+
+    return;
   }
+
+  setGuideStep(nextStep);
+
+  setMessages((prev) => [
+    ...prev,
+    {
+      role: "diana",
+      text: steps[nextStep],
+      guide: true
+    }
+  ]);
+}
 
   function openLink(type) {
     const links = {
@@ -349,13 +390,257 @@ Selecciona una opción:
             ))}
           </div>
         </div>
+        
+        const avatars = {
+          "Original": "/diana-avatar.png",
+        "Moreno claro": "/diana-avatar-morena.png",
+        "Claro": "/diana-avatar-clara.png"
+        };
+        
+        const avatar = avatars[skinTone];
+        
+        <div style={{
+      ...styles.card,
+      background: "rgba(2,11,22,.96)",
+      borderRadius: "26px",
+      padding: "18px"
+    }}>
+          <div style={{
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: "18px"
+    }}>
+            <h3 style={{ color: "white", margin: 0 }}>
+              Configuración de Diana
+            </h3>
+            <span style={{ color: "#94a3b8", fontSize: "22px" }}>×</span>
+          </div>
+          
+          <div style={{
+      border: `1px solid ${currentTheme.accent}44`,
+      borderRadius: "18px",
+      padding: "16px",
+      background: "rgba(8,26,47,.65)"
+    }}>
+            <h4 style={{ color: currentTheme.accent, marginBottom: "4px" }}>
+              Apariencia
+            </h4>
+            
+            <p style={{ color: "#94a3b8", fontSize: "13px", marginTop: 0 }}>
+              Personaliza la apariencia de Diana.
+            </p>
+            
+            <label>Color de piel</label>
+            
+            <div style={{
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr 1fr",
+      gap: "10px",
+      marginTop: "10px",
+      marginBottom: "20px"
+    }}>
+              {[
+      ["Original", "/diana-avatar.png"],
+      ["Moreno claro", "/diana-avatar-morena.png"],
+      ["Claro", "/diana-avatar-clara.png"]
+    ].map(([tone, img]) => (
+      <button
+        key={tone}
+        onClick={() => setSkinTone(tone)}
+        style={{
+          background: "#061428",
+          border:
+            
+            skinTone === tone
+            ? `2px solid ${currentTheme.accent}`
+            : "1px solid #1e3a5f",
+          borderRadius: "14px",
+          padding: "6px",
+          color: "white",
+          cursor: "pointer"
+        }}
+        
+      >
+        
+        <img
+          src={img}
+          onError={(e) => {
+            e.currentTarget.src = "/diana-avatar.png";
+          }}
+          
+          style={{
+            width: "100%",
+            height: "82px",
+            objectFit: "cover",
+            borderRadius: "10px",
+            marginBottom: "6px"
+          }}
+          
+          />
+        <div style={{ fontSize: "11px" }}>{tone}</div>
+      </button>
+    ))}
+            </div>
+            <hr style={{ borderColor: "#1e3a5f", opacity: .5 }} />
+            <label>Color principal</label>
+            <p style={{ color: "#94a3b8", fontSize: "12px", marginTop: "4px" }}>
+              Color con el que Diana te responde y te guía.
+            </p>
+            
+            <div style={{
+      display: "flex",
+      gap: "12px",
+      margin: "12px 0 20px"
+    }}>
+              {[
+      ["BBVA Premium", "#38bdf8"],
+      ["Turquesa Tecnológico", "#2dd4bf"],
+      ["Oscuro Profesional", "#60a5fa"],
+      ["Púrpura Creativo", "#c084fc"]
+    ].map(([name, color]) => (
+      
+      <button
+        key={name}
+        onClick={() => setTheme(name)}
+        title={name}
+        style={{
+          width: "28px",
+          height: "28px",
+          borderRadius: "50%",
+          background: color,
+          border:
+            theme === name
+            ? "3px solid white"
+            : "1px solid transparent",
+          cursor: "pointer"
+        }}
+        />
+    ))}
+            </div>
+            <hr style={{ borderColor: "#1e3a5f", opacity: .5 }} />
+            <label>Tema</label>
+            <p style={{ color: "#94a3b8", fontSize: "12px", marginTop: "4px" }}>
+              Selecciona el tema visual.
+            </p>
+            
+            <div style={{
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: "10px",
+      marginBottom: "20px"
+    }}>
+              <button
+                onClick={() => setTheme("Oscuro Profesional")}
+                style={{
+                  ...styles.ghostButton,
+                  border:
+                    theme === "Oscuro Profesional"
+                    ? `2px solid ${currentTheme.accent}`
+                    : `1px solid ${currentTheme.accent}`
+                }}
+                >
+                
+                🌙 Oscuro
+              </button>
+              <button
+                onClick={() => setTheme("BBVA Premium")}
+                style={styles.ghostButton}
+                >
+                
+                ☀️ Claro
+              </button>
+            </div>
+            
+            <hr style={{ borderColor: "#1e3a5f", opacity: .5 }} />
+            <h4 style={{ color: currentTheme.accent, marginBottom: "8px" }}>
+              Tipografía
+            </h4>
 
-        <div style={styles.card}>
-          <h3 style={{ color: currentTheme.accent, marginTop: 0 }}>
-            ⚙️ Configuración
-          </h3>
+    <div style={{
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: "10px",
+      marginBottom: "20px"
+    }}>
+      <select style={{
+        background: "#061428",
+        color: "white",
+        border: "1px solid #1e3a5f",
+        borderRadius: "12px",
+        padding: "10px"
+      }}>
+        <option>Inter</option>
+        <option>Arial</option>
+        <option>Roboto</option>
+      </select>
 
-          <label>Tema</label>
+      <select style={{
+        background: "#061428",
+        color: "white",
+        border: "1px solid #1e3a5f",
+        borderRadius: "12px",
+        padding: "10px"
+      }}>
+        <option>Mediano</option>
+        <option>Grande</option>
+        <option>Pequeño</option>
+      </select>
+    </div>
+
+    <hr style={{ borderColor: "#1e3a5f", opacity: .5 }} />
+
+    <h4 style={{ color: currentTheme.accent, marginBottom: "8px" }}>
+      Avatar
+    </h4>
+
+    <button style={{
+      ...styles.ghostButton,
+      width: "100%",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      gap: "8px"
+    }}>
+      🤖 Editar avatar
+    </button>
+
+    <hr style={{ borderColor: "#1e3a5f", opacity: .5 }} />
+
+    <h4 style={{ color: currentTheme.accent, marginBottom: "8px" }}>
+      Comportamiento
+    </h4>
+
+    <div style={{
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: "10px"
+    }}>
+      <select style={{
+        background: "#061428",
+        color: "white",
+        border: "1px solid #1e3a5f",
+        borderRadius: "12px",
+        padding: "10px"
+      }}>
+        <option>Detalladas</option>
+        <option>Directas</option>
+      </select>
+
+      <select style={{
+        background: "#061428",
+        color: "white",
+        border: "1px solid #1e3a5f",
+        borderRadius: "12px",
+        padding: "10px"
+      }}>
+        <option>Activado</option>
+        <option>Desactivado</option>
+      </select>
+    </div>
+  </div>
+</div>
+        <label>Tema</label>
           <select
             value={theme}
             onChange={(e) => setTheme(e.target.value)}
@@ -420,8 +705,8 @@ Selecciona una opción:
                   height: "180px",
                   borderRadius: "50%",
                   objectFit: "cover",
-                  border: `3px solid ${currentTheme.accent}`,
-                  boxShadow: `0 0 35px ${currentTheme.accent}80`
+                  border: `3px solid ${currentTheme.glow}`,
+                  boxShadow: `0 0 45px ${currentTheme.glow}`
                 }}
               />
               <div>
@@ -481,11 +766,32 @@ Selecciona una opción:
                     {m.text}
                   </pre>
 
-                  {m.role === "diana" && (
-                    <button onClick={startGuide} style={styles.button}>
-                      Da click si deseas que te guíe →
+                  {m.role === "diana" && !guideActive && !m.guide && (
+                  <button onClick={startGuide} style={styles.button}>
+                    Da click si deseas que te guíe →
+                  </button>
+                )}
+                  
+                  {m.role === "diana" && guideActive && m.guide && (
+                  <button onClick={nextGuideStep} style={styles.button}>
+                    Siguiente paso →
+                  </button>
+                )}
+                  
+                  {m.role === "diana" && m.options && (
+                  <div style={{ display: "grid", gap: "10px", marginTop: "14px" }}>
+                    {m.options.map((option) => (
+                    <button
+                      key={option}
+                      onClick={() => send(option)}
+                      style={styles.ghostButton}
+                      >
+                      {option}
                     </button>
-                  )}
+                  ))}
+                  </div>
+                )}
+                  
                 </div>
               </div>
             ))}
