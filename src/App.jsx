@@ -159,18 +159,44 @@ Validaciones:
 
     return "Puedo ayudarte con Teradata, VPN, Citrix, IAM, Jira, Helix, formatos DML e impedimentos. Escríbeme qué necesitas y te guío paso a paso.";
   }
+    
+    async function send(text = message) {
+  if (!text.trim()) return;
 
-  function send(text = message) {
-    if (!text.trim()) return;
+  const userText = text;
+
+  setMessages((prev) => [
+    ...prev,
+    { role: "user", text: userText },
+    { role: "diana", text: "Pensando..." }
+  ]);
+
+  setMessage("");
+
+  const localReply = responder(userText);
+
+  try {
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ message: userText })
+    });
+
+    const data = await response.json();
 
     setMessages((prev) => [
-      ...prev,
-      { role: "user", text },
-      { role: "diana", text: responder(text) }
+      ...prev.slice(0, -1),
+      { role: "diana", text: data.reply || localReply }
     ]);
-
-    setMessage("");
+  } catch (error) {
+    setMessages((prev) => [
+      ...prev.slice(0, -1),
+      { role: "diana", text: localReply }
+    ]);
   }
+}
 
   function getGuideSteps() {
     const lastUserMessage = [...messages].reverse().find((m) => m.role === "user");
