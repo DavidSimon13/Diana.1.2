@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 
 export default function App() {
+  const [showSettings, setShowSettings] = useState(false);
   const [message, setMessage] = useState("");
   const [skinTone, setSkinTone] = useState("Original");
   const [theme, setTheme] = useState("BBVA Premium");
@@ -340,8 +341,29 @@ function nextGuideStep() {
       cursor: "pointer"
     }
   };
-
-  return (
+    
+    return (
+      <>
+        <button
+        onClick={() => setShowSettings(!showSettings)}
+        style={{
+          position: "fixed",
+          top: "20px",
+          right: "20px",
+          zIndex: 999,
+          width: "52px",
+          height: "52px",
+          borderRadius: "14px",
+          border: `1px solid ${currentTheme.accent}`,
+          background: "#061428",
+          color: currentTheme.accent,
+          fontSize: "22px",
+          cursor: "pointer",
+          boxShadow: `0 0 20px ${currentTheme.accent}55`
+        }}
+        >
+        ⚙️
+      </button>
     <div style={styles.page}>
       <aside style={styles.sidebar}>
         <div>
@@ -370,6 +392,8 @@ function nextGuideStep() {
               </p>
             </div>
           </div>
+        </>
+        );
 
           <div style={{ marginTop: "28px", display: "grid", gap: "12px" }}>
             {[
@@ -412,6 +436,9 @@ function nextGuideStep() {
       marginBottom: "18px"
     }}>
             <h3 style={{ color: "white", margin: 0 }}>
+              
+              {showSettings && (
+      )}
               Configuración de Diana
             </h3>
             <span style={{ color: "#94a3b8", fontSize: "22px" }}>×</span>
