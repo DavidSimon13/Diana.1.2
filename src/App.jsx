@@ -3,6 +3,7 @@ import React, { useState } from "react";
 export default function App() {
   const [isTyping, setIsTyping] = useState(false);
   const [visualGuide, setVisualGuide] = useState(null);
+  const [visualStep, setVisualStep] = useState(0);
   const [chatHistory, setChatHistory] = useState([]);
   const [serviceStatus, setServiceStatus] = useState({
   vpn: "operativo",
@@ -14,6 +15,7 @@ export default function App() {
   const [lastAction, setLastAction] = useState(null);
   const [manualSearch, setManualSearch] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [pdfText, setPdfText] = useState("");
   const [showSettings, setShowSettings] = useState(false);
   const [message, setMessage] = useState("");
   const [skinTone, setSkinTone] = useState("Original");
@@ -506,7 +508,7 @@ Escríbeme qué necesitas y te guío paso a paso.`;
   }
 
   function openLink(type) {
-    function handleFileUpload(event) {
+    async function handleFileUpload(event) {
   const files = Array.from(event.target.files);
 
   const nuevosArchivos = files.map((file) => ({
@@ -520,6 +522,25 @@ Escríbeme qué necesitas y te guío paso a paso.`;
     ...nuevosArchivos,
     ...prev
   ]);
+
+  // Detectar PDFs
+  const pdf = files.find((f) =>
+    f.type.includes("pdf")
+  );
+
+  if (pdf) {
+    setPdfText(`
+📄 Documento detectado:
+${pdf.name}
+
+Diana ya puede:
+✅ Mostrar el documento
+✅ Abrir el PDF
+✅ Usarlo como evidencia
+✅ Buscar información
+✅ Resumir contenido manualmente
+    `);
+  }
 
   setMessages((prev) => [
     ...prev,
@@ -547,50 +568,80 @@ Puedo ayudarte a:
     window.open(links[type], "_blank", "noopener,noreferrer");
   }
   
-  function abrirGuiaVisual(tipo) {
+function abrirGuiaVisual(tipo) {
   const guias = {
     teradata: {
       titulo: "Alta Usuario Teradata",
-      imagen: "/manual-teradata.png",
-      descripcion:
-        "Aquí debes seleccionar el servicio Alta Usuario Teradata y continuar con los datos del usuario.",
+      descripcion: "Diana te guía visualmente para solicitar alta o reasignación Teradata.",
       pasos: [
-        "Busca Teradata en el catálogo.",
-        "Selecciona Alta Usuario Teradata.",
-        "Llena los datos del usuario.",
-        "Adjunta Vo.Bo.",
-        "Envía la solicitud."
+        {
+          texto: "Busca el servicio relacionado con Teradata.",
+          imagen: "/teradata-paso-1.png"
+        },
+        {
+          texto: "Selecciona Alta Usuario Teradata.",
+          imagen: "/teradata-paso-2.png"
+        },
+        {
+          texto: "Llena los datos del usuario y adjunta Vo.Bo.",
+          imagen: "/teradata-paso-3.png"
+        },
+        {
+          texto: "Envía la solicitud y da seguimiento.",
+          imagen: "/teradata-paso-4.png"
+        }
       ]
     },
+
     vpn: {
-      titulo: "Guía VPN",
-      imagen: "/manual-vpn.png",
-      descripcion:
-        "Aquí Diana te guía para revisar error VPN o levantar nueva alta.",
+      titulo: "Guía visual VPN",
+      descripcion: "Diana te muestra qué hacer cuando aparece error VPN.",
       pasos: [
-        "Verifica si ya tienes permiso VPN.",
-        "Si tienes error, reinicia el equipo.",
-        "Abre Cisco nuevamente.",
-        "Si persiste, contacta soporte.",
-        "Si es alta nueva, levanta Jira."
+        {
+          texto: "Cierra y desconecta la VPN.",
+          imagen: "/vpn-paso-1.png"
+        },
+        {
+          texto: "Reinicia el equipo.",
+          imagen: "/vpn-paso-2.png"
+        },
+        {
+          texto: "Abre Cisco y vuelve a conectar.",
+          imagen: "/vpn-paso-3.png"
+        },
+        {
+          texto: "Si persiste, contacta soporte VPN.",
+          imagen: "/vpn-paso-4.png"
+        }
       ]
     },
+
     iam: {
-      titulo: "IAM Plataformas",
-      imagen: "/manual-iam.png",
-      descripcion:
-        "Aquí debes clonar la plantilla correcta, no editar la original.",
+      titulo: "Guía visual IAM",
+      descripcion: "Diana te guía para clonar plantillas y llenar solicitudes IAM.",
       pasos: [
-        "Ubica la plantilla correcta.",
-        "No edites la plantilla original.",
-        "Clona la plantilla.",
-        "Edita resumen y descripción.",
-        "Adjunta evidencia."
+        {
+          texto: "Ubica la plantilla correcta.",
+          imagen: "/iam-paso-1.png"
+        },
+        {
+          texto: "No edites la plantilla original.",
+          imagen: "/iam-paso-2.png"
+        },
+        {
+          texto: "Clona la plantilla.",
+          imagen: "/iam-paso-3.png"
+        },
+        {
+          texto: "Edita descripción, adjunta evidencia y envía.",
+          imagen: "/iam-paso-4.png"
+        }
       ]
     }
   };
 
   setVisualGuide(guias[tipo]);
+  setVisualStep(0);
 }
 
   const quickActions = [
@@ -889,13 +940,13 @@ const manualesFiltrados = manuales.filter((m) =>
 
         <main style={styles.main}>
           
-          {visualGuide && (
-      <div
+         {visualGuide && (
+  <div
     style={{
       position: "fixed",
       top: "90px",
       right: "430px",
-      width: "520px",
+      width: "560px",
       maxHeight: "82vh",
       overflowY: "auto",
       zIndex: 997,
@@ -910,7 +961,7 @@ const manualesFiltrados = manuales.filter((m) =>
         background: "transparent",
         color: "white",
         border: "none",
-        fontSize: "22px",
+        fontSize: "24px",
         cursor: "pointer"
       }}
     >
@@ -918,39 +969,57 @@ const manualesFiltrados = manuales.filter((m) =>
     </button>
 
     <h2 style={styles.cyan}>📘 {visualGuide.titulo}</h2>
-
-    <img
-      src={visualGuide.imagen}
-      alt={visualGuide.titulo}
-      onError={(e) => {
-        e.currentTarget.style.display = "none";
-      }}
-      style={{
-        width: "100%",
-        borderRadius: "18px",
-        border: `2px solid ${currentTheme.accent}`,
-        marginBottom: "16px"
-      }}
-    />
-
     <p>{visualGuide.descripcion}</p>
 
-    <h3 style={styles.cyan}>Paso a paso</h3>
+    <div
+      style={{
+        padding: "12px",
+        borderRadius: "16px",
+        background: "#0b2747",
+        border: `1px solid ${currentTheme.accent}`,
+        marginBottom: "14px"
+      }}
+    >
+      <strong style={styles.cyan}>
+        Paso {visualStep + 1} de {visualGuide.pasos.length}
+      </strong>
 
-    {visualGuide.pasos.map((paso, index) => (
-      <div
-        key={paso}
-        style={{
-          marginBottom: "10px",
-          padding: "12px",
-          borderRadius: "14px",
-          background: "#0b2747",
-          border: `1px solid ${currentTheme.accent}`
+      <p>{visualGuide.pasos[visualStep].texto}</p>
+
+      <img
+        src={visualGuide.pasos[visualStep].imagen}
+        alt="Paso visual"
+        onError={(e) => {
+          e.currentTarget.style.display = "none";
         }}
+        style={{
+          width: "100%",
+          borderRadius: "16px",
+          border: `2px solid ${currentTheme.accent}`,
+          marginTop: "10px"
+        }}
+      />
+    </div>
+
+    <div style={{ display: "flex", gap: "10px" }}>
+      <button
+        onClick={() => setVisualStep(Math.max(visualStep - 1, 0))}
+        style={styles.ghostButton}
       >
-        <strong>Paso {index + 1}:</strong> {paso}
-      </div>
-    ))}
+        ← Anterior
+      </button>
+
+      <button
+        onClick={() =>
+          setVisualStep(
+            Math.min(visualStep + 1, visualGuide.pasos.length - 1)
+          )
+        }
+        style={styles.button}
+      >
+        Siguiente →
+      </button>
+    </div>
   </div>
 )}
           <section>
@@ -1217,7 +1286,20 @@ const manualesFiltrados = manuales.filter((m) =>
 
             <div style={{ ...styles.card, marginBottom: "18px" }}>
   <h3 style={styles.cyan}>📂 Archivos adjuntos</h3>
-
+{pdfText && (
+  <div
+    style={{
+      marginTop: "12px",
+      padding: "12px",
+      borderRadius: "14px",
+      background: "#061428",
+      border: `1px solid ${currentTheme.accent}`,
+      whiteSpace: "pre-wrap"
+    }}
+  >
+    {pdfText}
+  </div>
+)}
   {uploadedFiles.length === 0 ? (
     <p style={{ color: "#94a3b8" }}>
       No hay archivos cargados.
