@@ -576,7 +576,7 @@ function abrirGuiaVisual(tipo) {
       pasos: [
         {
           texto: "Busca el servicio relacionado con Teradata.",
-          imagen: "/teradata-paso-1.png"
+          imagen: "/guia-visual-completa.png"
         },
         {
           texto: "Selecciona Alta Usuario Teradata.",
