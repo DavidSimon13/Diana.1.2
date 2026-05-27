@@ -4,6 +4,7 @@ export default function App() {
   const [isTyping, setIsTyping] = useState(false);
   const [visualGuide, setVisualGuide] = useState(null);
   const [visualStep, setVisualStep] = useState(0);
+  const [visualQuestion, setVisualQuestion] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
   const [serviceStatus] = useState({
     vpn: "operativo",
@@ -498,42 +499,72 @@ Puedo ayudarte a:
   }
 
   function abrirGuiaVisual(tipo) {
-    const guias = {
-      teradata: {
-        titulo: "Alta Usuario Teradata",
-        descripcion: "Diana te guía visualmente para solicitar alta o reasignación Teradata.",
-        pasos: [
-          { texto: "Busca el servicio relacionado con Teradata.", imagen: "/guia-visual-completa.png" },
-          { texto: "Selecciona Alta Usuario Teradata.", imagen: "/guia-visual-completa.png" },
-          { texto: "Llena los datos del usuario y adjunta Vo.Bo.", imagen: "/guia-visual-completa.png" },
-          { texto: "Envía la solicitud y da seguimiento.", imagen: "/guia-visual-completa.png" }
-        ]
-      },
-      vpn: {
-        titulo: "Guía visual VPN",
-        descripcion: "Diana te muestra qué hacer cuando aparece error VPN.",
-        pasos: [
-          { texto: "Cierra y desconecta la VPN.", imagen: "/guia-visual-completa.png" },
-          { texto: "Reinicia el equipo.", imagen: "/guia-visual-completa.png" },
-          { texto: "Abre Cisco y vuelve a conectar.", imagen: "/guia-visual-completa.png" },
-          { texto: "Si persiste, contacta soporte VPN.", imagen: "/guia-visual-completa.png" }
-        ]
-      },
-      iam: {
-        titulo: "Guía visual IAM",
-        descripcion: "Diana te guía para clonar plantillas y llenar solicitudes IAM.",
-        pasos: [
-          { texto: "Ubica la plantilla correcta.", imagen: "/guia-visual-completa.png" },
-          { texto: "No edites la plantilla original.", imagen: "/guia-visual-completa.png" },
-          { texto: "Clona la plantilla.", imagen: "/guia-visual-completa.png" },
-          { texto: "Edita descripción, adjunta evidencia y envía.", imagen: "/guia-visual-completa.png" }
-        ]
-      }
-    };
+  const guias = {
+    teradata: {
+      titulo: "Alta Usuario Teradata",
+      descripcion: "Diana te guía usando el manual PDF de Teradata.",
+      pasos: [
+        {
+          texto: "Revisa el inicio del manual de alta Teradata.",
+          pdf: "/Manual Alta usuario Teradata.pptx.pdf#page=1"
+        },
+        {
+          texto: "Ubica el proceso de solicitud o reasignación.",
+          pdf: "/Manual Alta usuario Teradata.pptx.pdf#page=2"
+        },
+        {
+          texto: "Valida los datos requeridos del usuario.",
+          pdf: "/Manual Alta usuario Teradata.pptx.pdf#page=3"
+        },
+        {
+          texto: "Adjunta Vo.Bo. y continúa con Helix/Jira.",
+          pdf: "/Manual Alta usuario Teradata.pptx.pdf#page=4"
+        }
+      ]
+    },
 
-    setVisualGuide(guias[tipo]);
-    setVisualStep(0);
-  }
+    vpn: {
+      titulo: "Guía visual VPN / Citrix",
+      descripcion: "Diana te muestra el manual relacionado con acceso remoto.",
+      pasos: [
+        {
+          texto: "Revisa la guía de acceso Citrix.",
+          pdf: "/Guía de Acceso a Citrix DaaS.pdf#page=1"
+        },
+        {
+          texto: "Sigue los pasos de conexión.",
+          pdf: "/Guía de Acceso a Citrix DaaS.pdf#page=2"
+        },
+        {
+          texto: "Valida errores comunes.",
+          pdf: "/Guía de Acceso a Citrix DaaS.pdf#page=3"
+        }
+      ]
+    },
+
+    iam: {
+      titulo: "Guía visual IAM / Jira / Helix",
+      descripcion: "Diana te guía usando los manuales de Jira y Helix.",
+      pasos: [
+        {
+          texto: "Revisa el manual de solicitudes Innovation MX Jira.",
+          pdf: "/Manual Solicitudes_Innovation_MX_JIRA.pdf#page=1"
+        },
+        {
+          texto: "Revisa el manual de peticiones Helix - Jira Soporte MX.",
+          pdf: "/Manual de Peticiones Helix - Jira Soporte MX.pdf#page=1"
+        },
+        {
+          texto: "Valida la evidencia y comentarios necesarios.",
+          pdf: "/Vo.Bo.pdf#page=1"
+        }
+      ]
+    }
+  };
+
+  setVisualGuide(guias[tipo]);
+  setVisualStep(0);
+}
 
   const quickActions = [
     "Necesito dar de alta un usuario en Teradata",
@@ -713,8 +744,63 @@ Puedo ayudarte a:
               <div style={{ padding: "12px", borderRadius: "16px", background: "#0b2747", border: `1px solid ${currentTheme.accent}` }}>
                 <strong style={styles.cyan}>Paso {visualStep + 1} de {visualGuide.pasos.length}</strong>
                 <p>{visualGuide.pasos[visualStep].texto}</p>
-                <img src={visualGuide.pasos[visualStep].imagen} alt="Paso visual" style={{ width: "100%", borderRadius: "16px" }} />
-              </div>
+                <iframe src={visualGuide.pasos[visualStep].pdf} title="Demostración PDF" style={{ width: "100%", height: "420px", borderRadius: "16px", border: `2px solid ${currentTheme.accent}`, marginTop: "10px", background: "white" }} />
+              </div> 
+              
+              <div
+                style={{
+                  marginTop: "16px",
+                  padding: "14px",
+                  borderRadius: "16px",
+                  background: "#061428",
+                  border: `1px solid ${currentTheme.accent}`
+                }}
+              >
+                <strong style={styles.cyan}>
+                  🤖 ¿Tienes dudas sobre este paso?
+                
+              </strong>
+            <p
+              
+              style={{
+                color: "#94a3b8",
+                fontSize: "13px"
+              }}
+            >
+              Escríbeme y con gusto te ayudo.
+            
+            </p>
+          <div
+            style={{
+              display: "flex",
+              gap: "10px",
+              marginTop: "10px"
+            }}
+          >
+            <input
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Escribe tu mensaje..."
+              style={{
+                flex: 1,
+                padding: "12px",
+                borderRadius: "14px",
+                background: "#0b2747",
+                color: "white",
+                border: `1px solid ${currentTheme.accent}`,
+                outline: "none"
+              }}
+            />
+            
+            <button
+              onClick={() => send()}
+              style={styles.button}
+            >
+              ➤
+            </button>
+          </div>
+        </div>
+              
               <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
                 <button onClick={() => setVisualStep(Math.max(visualStep - 1, 0))} style={styles.ghostButton}>← Anterior</button>
                 <button onClick={() => setVisualStep(Math.min(visualStep + 1, visualGuide.pasos.length - 1))} style={styles.button}>Siguiente →</button>
@@ -741,18 +827,19 @@ Puedo ayudarte a:
                     <strong style={styles.cyan}>{m.role === "user" ? "Usuario" : "🤖 Diana"}</strong>
                     <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", lineHeight: "1.6" }}>{m.text}</pre>
 
-                    {m.role === "diana" && !guideActive && !m.guide && (
+                    {m.role === "diana" && !guideActive && !m.guide && !m.text.includes("Modo guía activado") && (
                       <button onClick={startGuide} style={styles.button}>Da click si deseas que te guíe →</button>
                     )}
 
+                    {m.role === "diana" && guideActive && m.guide && (
+                      <button onClick={nextGuideStep} style={styles.button}>Siguiente paso →
+                      </button>
+                    )}
+                    
                     {m.role === "diana" && (
                       <button onClick={() => copiarTexto(m.text)} style={{ ...styles.ghostButton, marginTop: "10px" }}>📋 Copiar respuesta</button>
                     )}
-
-                    {m.role === "diana" && guideActive && m.guide && (
-                      <button onClick={nextGuideStep} style={styles.button}>Siguiente paso →</button>
-                    )}
-
+                    
                     {m.role === "diana" && m.options && (
                       <div style={{ display: "grid", gap: "10px", marginTop: "14px" }}>
                         {m.options.map((option) => (
