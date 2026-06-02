@@ -203,7 +203,48 @@ Se procede con el cierre del caso.
 
 Saludos.`;
   }
+function generarCorreosVoBoAmbos() {
+  return `📧 Correos Vo.Bo. generados
 
+━━━━━━━━━━━━━━━━━━━━━━
+CORREO 1 — Para el usuario
+━━━━━━━━━━━━━━━━━━━━━━
+
+Hola, ando tramitando tu alta de Teradata pero necesito el Vo.Bo. de tu jefe directo con la siguiente estructura:
+
+“Yo como jefe del usuario XXXXX otorgo el Vo.Bo. para alta del usuario MX indicando los siguientes datos:
+-ID
+-Nombre
+-Puesto
+-Área
+-IP
+-Instancia
+-Profile a asignar
+-Role”
+
+Yo te proporciono los siguientes datos:
+-IP: 150.100.43.100
+-Instancia: KLARMXPU/KLARMXPV
+-Profile a asignar: PLAOMXP_LUSER
+-Role: RLARMXP_ENDUSR_MI05779
+
+━━━━━━━━━━━━━━━━━━━━━━
+CORREO 2 — Para el jefe / receptor
+━━━━━━━━━━━━━━━━━━━━━━
+
+Hola [NOMBRE DEL JEFE], buen día, espero que se encuentren muy bien.
+
+El motivo de este correo es solicitar tu amable Vo.Bo. para levantar las solicitudes de creación de rol en JIRA y posteriormente el alta de usuario en Helix.
+
+Este movimiento es por reasignación:
+
+[Agregar usuario que cede la licencia]
+[Agregar usuario receptor]
+
+Quedo atento a tu amable Vo.Bo.
+
+Saludos.`;
+}
   function responder(txt) {
     const t = normalizar(txt);
     const intent = detectarIntencion(txt);
@@ -241,7 +282,20 @@ Como ya tienes el Vo.Bo., el siguiente paso es:
       actualizarContexto("cierre", txt);
       return generarCierre();
     }
-
+    
+    if (
+      t.includes("genera el de ambos") ||
+      t.includes("generame el de ambos") ||
+      t.includes("genérame el de ambos") ||
+      t.includes("correo de ambos") ||
+      t.includes("ambos vobo") ||
+      t.includes("ambos vo.bo") ||
+      t === "si" ||
+      t === "sí"
+    ) {
+  return generarCorreosVoBoAmbos();
+}
+    
     if (intent === "vobo") {
       return `📧 Mensaje para solicitar Vo.Bo.
 
@@ -366,33 +420,40 @@ Escríbeme qué necesitas y te guío paso a paso.`;
   }
 
   function send(text = message) {
-    if (!text.trim()) return;
+  if (!text.trim()) return;
 
-    const respuestaDiana = responder(text);
-    const intent = detectarIntencion(text);
+  const userText = text;
+  const intent = detectarIntencion(userText);
 
-    setGuideActive(false);
-    setGuideStep(0);
-    setLastAction(intent);
-    setIsTyping(true);
+  setMessages((prev) => [...prev, { role: "user", text: userText }]);
+  setMessage("");
 
-    setChatHistory((prev) => [
-      {
-        titulo: text.length > 28 ? text.slice(0, 28) + "..." : text,
-        proceso: intent,
-        fecha: new Date().toLocaleTimeString()
-      },
-      ...prev
-    ]);
-
-    setMessages((prev) => [...prev, { role: "user", text }]);
-    setMessage("");
-
+  if (guideActive) {
     setTimeout(() => {
-      setMessages((prev) => [...prev, { role: "diana", text: respuestaDiana }]);
-      setIsTyping(false);
-    }, 700);
+      nextGuideStep(userText);
+    }, 400);
+    return;
   }
+
+  const respuestaDiana = responder(userText);
+
+  setLastAction(intent);
+  setIsTyping(true);
+
+  setChatHistory((prev) => [
+    {
+      titulo: userText.length > 28 ? userText.slice(0, 28) + "..." : userText,
+      proceso: intent,
+      fecha: new Date().toLocaleTimeString()
+    },
+    ...prev
+  ]);
+
+  setTimeout(() => {
+    setMessages((prev) => [...prev, { role: "diana", text: respuestaDiana }]);
+    setIsTyping(false);
+  }, 700);
+}
 
   function getGuideSteps() {
     const lastUserMessage = [...messages].reverse().find((m) => m.role === "user");
@@ -401,7 +462,7 @@ Escríbeme qué necesitas y te guío paso a paso.`;
     if (context.includes("teradata")) {
       return [
         "📘 Guía Teradata - Paso 1\n\nConfirma si el usuario ya cuenta con licencia o si será reasignación.",
-        "📘 Guía Teradata - Paso 2\n\nSolicita el Vo.Bo. del usuario que cede la licencia y del N4 del usuario receptor.",
+        "📘 Guía Teradata - Paso 2\n\nSolicita el Vo.Bo. del usuario que cede la licencia y del N4 del usuario receptor.\n\n¿Ya cuentas con ambos Vo.Bo.?\n\nTambién puedo generarte los correos para ambos.",
         "📘 Guía Teradata - Paso 3\n\nCon los Vo.Bo. listos, genera el correo y comentario Helix.",
         "📘 Guía Teradata - Paso 4\n\nLevanta Jira / Helix y valida acceso por Citrix.",
         "✅ Guía Teradata finalizada."
@@ -412,38 +473,55 @@ Escríbeme qué necesitas y te guío paso a paso.`;
   }
 
   function startGuide() {
-    const steps = getGuideSteps();
-    setGuideActive(true);
+  const steps = getGuideSteps();
+
+  setGuideActive(true);
+  setGuideStep(0);
+
+  setMessages((prev) => [
+    ...prev,
+    {
+      role: "diana",
+      text: steps[0],
+      guide: true
+    }
+  ]);
+}
+
+  function nextGuideStep(userAnswer = "") {
+  const steps = getGuideSteps();
+  const nextStep = guideStep + 1;
+
+  if (nextStep >= steps.length) {
+    setGuideActive(false);
     setGuideStep(0);
 
     setMessages((prev) => [
       ...prev,
       {
         role: "diana",
-        text: steps[0],
-        guide: true,
-        options: ["Teradata", "VPN", "Citrix", "IAM", "Formato DML"]
+        text:
+          "✅ Guía terminada. Ya tienes los pasos principales para continuar."
       }
     ]);
+
+    return;
   }
 
-  function nextGuideStep() {
-    const steps = getGuideSteps();
-    const nextStep = guideStep + 1;
+  setGuideStep(nextStep);
 
-    if (nextStep >= steps.length) {
-      setGuideActive(false);
-      setGuideStep(0);
-      setMessages((prev) => [
-        ...prev,
-        { role: "diana", text: "✅ Guía terminada. Si necesitas otro proceso, escríbelo y te acompaño paso a paso." }
-      ]);
-      return;
+  setMessages((prev) => [
+    ...prev,
+    {
+      role: "diana",
+      text:
+        userAnswer.trim() !== ""
+          ? `Perfecto, tomo en cuenta tu respuesta: "${userAnswer}".\n\n${steps[nextStep]}`
+          : steps[nextStep],
+      guide: true
     }
-
-    setGuideStep(nextStep);
-    setMessages((prev) => [...prev, { role: "diana", text: steps[nextStep], guide: true }]);
-  }
+  ]);
+}
 
   function openLink(type) {
     const links = {
@@ -830,22 +908,25 @@ Puedo ayudarte a:
                     {m.role === "diana" && !guideActive && !m.guide && !m.text.includes("Modo guía activado") && (
                       <button onClick={startGuide} style={styles.button}>Da click si deseas que te guíe →</button>
                     )}
-
+                    
                     {m.role === "diana" && guideActive && m.guide && (
                       <button onClick={nextGuideStep} style={styles.button}>Siguiente paso →
                       </button>
                     )}
                     
+                    {m.role === "diana" &&
+                      guideActive &&
+                      m.guide &&
+                      m.text.includes("También puedo generarte los correos para ambos") && (
+                        <button
+                          onClick={() => send("Genera el de ambos")}
+                          style={{ ...styles.ghostButton, marginTop: "10px" }}
+                        >
+                          📧 ¿Quieres que te genere el de ambos?
+                        </button>
+                      )}
                     {m.role === "diana" && (
                       <button onClick={() => copiarTexto(m.text)} style={{ ...styles.ghostButton, marginTop: "10px" }}>📋 Copiar respuesta</button>
-                    )}
-                    
-                    {m.role === "diana" && m.options && (
-                      <div style={{ display: "grid", gap: "10px", marginTop: "14px" }}>
-                        {m.options.map((option) => (
-                          <button key={option} onClick={() => send(option)} style={styles.ghostButton}>{option}</button>
-                        ))}
-                      </div>
                     )}
                   </div>
                 </div>
