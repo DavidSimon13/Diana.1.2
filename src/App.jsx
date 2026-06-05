@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 
 export default function App() {
+  const [viewMode, setViewMode] = useState("full");
   const [isTyping, setIsTyping] = useState(false);
   const [visualGuide, setVisualGuide] = useState(null);
   const [visualStep, setVisualStep] = useState(0);
@@ -45,27 +46,51 @@ export default function App() {
   const avatar = avatars[skinTone];
 
   const themeColors = {
-    "BBVA Premium": {
-      bg: "linear-gradient(135deg,#020817,#061428,#082f49)",
-      accent: "#38bdf8",
-      glow: "#38bdf8"
-    },
-    "Oscuro Profesional": {
-      bg: "linear-gradient(135deg,#000000,#111827,#1f2937)",
-      accent: "#60a5fa",
-      glow: "#60a5fa"
-    },
-    "Turquesa Tecnológico": {
-      bg: "linear-gradient(135deg,#022c22,#064e3b,#0f766e)",
-      accent: "#2dd4bf",
-      glow: "#2dd4bf"
-    },
-    "Púrpura Creativo": {
-      bg: "linear-gradient(135deg,#1e032e,#3b0764,#581c87)",
-      accent: "#c084fc",
-      glow: "#c084fc"
-    }
-  };
+  "BBVA Premium": {
+    bg: "linear-gradient(135deg,#020817,#061428,#082f49)",
+    card: "rgba(8,26,47,.92)",
+    sidebar: "#020b16",
+    accent: "#38bdf8",
+    glow: "#38bdf8",
+    text: "white"
+  },
+
+  "Oscuro Profesional": {
+    bg: "linear-gradient(135deg,#000000,#111827,#1f2937)",
+    card: "rgba(15,23,42,.95)",
+    sidebar: "#020617",
+    accent: "#60a5fa",
+    glow: "#60a5fa",
+    text: "white"
+  },
+
+  "Turquesa Tecnológico": {
+    bg: "linear-gradient(135deg,#022c22,#064e3b,#0f766e)",
+    card: "rgba(4,120,87,.20)",
+    sidebar: "#022c22",
+    accent: "#2dd4bf",
+    glow: "#2dd4bf",
+    text: "white"
+  },
+
+  "Púrpura Creativo": {
+    bg: "linear-gradient(135deg,#1e032e,#3b0764,#581c87)",
+    card: "rgba(88,28,135,.25)",
+    sidebar: "#1e032e",
+    accent: "#c084fc",
+    glow: "#c084fc",
+    text: "white"
+  },
+
+  "Claro": {
+    bg: "#f8fafc",
+    card: "#ffffff",
+    sidebar: "#e2e8f0",
+    accent: "#2563eb",
+    glow: "#60a5fa",
+    text: "#0f172a"
+  }
+};
 
   const currentTheme = themeColors[theme];
 
@@ -685,18 +710,33 @@ Puedo ayudarte a:
       .toLowerCase()
       .includes(manualSearch.toLowerCase())
   );
-
+  
+const pulseAvatar = {
+  animation: "pulseDiana 2.4s infinite ease-in-out"
+};
   const styles = {
     page: {
-      minHeight: "100vh",
-      background: currentTheme.bg,
-      color: "white",
-      fontFamily: "Inter, Arial, sans-serif",
-      display: "flex"
-    },
+  minHeight: viewMode === "floating" ? "720px" : "100vh",
+  width: viewMode === "floating" ? "460px" : "100%",
+  height: viewMode === "floating" ? "720px" : "auto",
+  position: viewMode === "floating" ? "fixed" : "relative",
+  right: viewMode === "floating" ? "24px" : "auto",
+  bottom: viewMode === "floating" ? "24px" : "auto",
+  borderRadius: viewMode === "floating" ? "28px" : "0px",
+  overflow: "hidden",
+  background: currentTheme.bg,
+  color: "white",
+  fontFamily: "Inter, Arial, sans-serif",
+  display: "flex",
+  zIndex: 900,
+  boxShadow:
+    viewMode === "floating"
+      ? `0 0 45px ${currentTheme.accent}55`
+      : "none"
+},
     sidebar: {
       width: "290px",
-      background: "#020b16",
+      background: currentTheme.sidebar,
       borderRight: `1px solid ${currentTheme.accent}`,
       padding: "24px"
     },
@@ -708,7 +748,7 @@ Puedo ayudarte a:
       gap: "24px"
     },
     card: {
-      background: "rgba(8,26,47,.9)",
+      background: currentTheme.card,
       border: `1px solid ${currentTheme.accent}`,
       borderRadius: "24px",
       padding: "22px",
@@ -736,6 +776,70 @@ Puedo ayudarte a:
 
   return (
     <>
+      <style>
+        {`
+    @keyframes pulseDiana {
+      0% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 10px ${currentTheme.glow});
+      }
+      50% {
+        transform: scale(1.04);
+        filter: drop-shadow(0 0 28px ${currentTheme.glow});
+      }
+      100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 10px ${currentTheme.glow});
+      }
+    }
+    @media (max-width: 900px) {
+  .diana-layout {
+    flex-direction: column !important;
+  }
+
+  .diana-sidebar {
+    width: auto !important;
+  }
+
+  .diana-main {
+    display: block !important;
+    padding: 14px !important;
+  }
+
+  .diana-right-panel {
+    margin-top: 18px !important;
+  }
+
+  .diana-hero {
+    flex-direction: column !important;
+    text-align: center !important;
+  }
+}
+    @media (max-width: 900px) {
+  .diana-layout {
+    flex-direction: column !important;
+  }
+
+  .diana-sidebar {
+    width: auto !important;
+  }
+
+  .diana-main {
+    display: block !important;
+    padding: 14px !important;
+  }
+
+  .diana-right-panel {
+    margin-top: 18px !important;
+  }
+
+  .diana-hero {
+    flex-direction: column !important;
+    text-align: center !important;
+  }
+}
+  `}
+</style>
       <button
         onClick={() => setShowSettings(!showSettings)}
         style={{
@@ -759,6 +863,20 @@ Puedo ayudarte a:
       {showSettings && (
         <div style={{ position: "fixed", top: "84px", right: "20px", width: "380px", zIndex: 998, ...styles.card }}>
           <h3 style={styles.cyan}>Configuración de Diana</h3>
+          <button
+  onClick={() =>
+    setViewMode(viewMode === "floating" ? "full" : "floating")
+  }
+  style={{
+    ...styles.ghostButton,
+    width: "100%",
+    marginBottom: "12px"
+  }}
+>
+  {viewMode === "floating"
+    ? "🖥️ Cambiar a pantalla completa"
+    : "🪟 Cambiar a modo flotante"}
+</button>
 
           <label>Color de piel</label>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px", marginTop: "10px" }}>
@@ -780,12 +898,13 @@ Puedo ayudarte a:
             <option>Oscuro Profesional</option>
             <option>Turquesa Tecnológico</option>
             <option>Púrpura Creativo</option>
+            <option>Claro</option>
           </select>
         </div>
       )}
 
-      <div style={styles.page}>
-        <aside style={styles.sidebar}>
+      <div className="diana-layout" style={styles.page}>
+        <aside className="diana-sidebar" style={styles.sidebar}>
           <div style={{ display: "flex", gap: "14px", alignItems: "center" }}>
             <img src={avatar} alt="Diana" style={{ width: "64px", height: "64px", borderRadius: "20px", objectFit: "cover" }} />
             <div>
@@ -813,7 +932,7 @@ Puedo ayudarte a:
           </div>
         </aside>
 
-        <main style={styles.main}>
+        <main className="diana-main" style={styles.main}>
           {visualGuide && (
             <div style={{ position: "fixed", top: "90px", right: "430px", width: "560px", maxHeight: "82vh", overflowY: "auto", zIndex: 997, ...styles.card }}>
               <button onClick={() => setVisualGuide(null)} style={{ float: "right", background: "transparent", color: "white", border: "none", fontSize: "24px", cursor: "pointer" }}>×</button>
@@ -888,8 +1007,8 @@ Puedo ayudarte a:
 
           <section>
             <div style={{ ...styles.card, marginBottom: "22px" }}>
-              <div style={{ display: "flex", gap: "22px", alignItems: "center" }}>
-                <img src={avatar} alt="Diana avatar" style={{ width: "180px", height: "180px", borderRadius: "50%", objectFit: "cover", boxShadow: `0 0 45px ${currentTheme.glow}` }} />
+              <div className="diana-hero" style={{ display: "flex", gap: "22px", alignItems: "center" }}>
+                <img src={avatar} alt="Diana avatar" style={{ width: "180px", height: "180px", borderRadius: "50%", objectFit: "cover", boxShadow: `0 0 45px ${currentTheme.glow}`,...pulseAvatar }} />
                 <div>
                   <h1 style={{ fontSize: "44px", margin: 0 }}>👋 Hola, soy <span style={styles.cyan}>Diana</span></h1>
                   <p style={{ fontSize: "18px", color: "#cbd5e1" }}>Tu asistente inteligente BBVA para procesos, accesos, soporte y generación automática.</p>
@@ -958,7 +1077,7 @@ Puedo ayudarte a:
             </div>
           </section>
 
-          <aside>
+          <aside className="diana-right-panel">
             <div style={{ ...styles.card, marginBottom: "18px" }}>
               <h3 style={styles.cyan}>🔍 Buscador de manuales</h3>
               <input value={manualSearch} onChange={(e) => setManualSearch(e.target.value)} placeholder="Buscar VPN, IAM, Teradata..." style={{ width: "100%", padding: "12px", borderRadius: "14px", background: "#0b2747", color: "white", border: `1px solid ${currentTheme.accent}`, marginBottom: "12px", boxSizing: "border-box" }} />
