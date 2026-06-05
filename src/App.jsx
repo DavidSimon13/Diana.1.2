@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import * as pdfjsLib from "pdfjs-dist";
 
 export default function App() {
   const [viewMode, setViewMode] = useState("full");
@@ -17,6 +18,7 @@ export default function App() {
   const [manualSearch, setManualSearch] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [pdfText, setPdfText] = useState("");
+  const [imageAnalysis, setImageAnalysis] = useState("");
   const [showSettings, setShowSettings] = useState(false);
   const [message, setMessage] = useState("");
   const [skinTone, setSkinTone] = useState("Original");
@@ -273,6 +275,31 @@ Saludos.`;
   function responder(txt) {
     const t = normalizar(txt);
     const intent = detectarIntencion(txt);
+    if (
+  pdfText &&
+  (
+    t.includes("pdf") ||
+    t.includes("documento") ||
+    t.includes("manual") ||
+    t.includes("resume") ||
+    t.includes("resumen") ||
+    t.includes("que dice") ||
+    t.includes("qué dice")
+  )
+) {
+  return `📄 Revisé el documento cargado.
+
+Esto es lo más relevante que encontré:
+
+${pdfText.substring(0, 1800)}
+
+Si quieres, puedo ayudarte a convertirlo en:
+✅ resumen
+✅ pasos
+✅ checklist
+✅ correo
+✅ comentario Helix`;
+}
 
     if (t.includes("ya tengo el vobo") || t.includes("ya tengo el vo.bo")) {
       return `Perfecto 👌
@@ -429,7 +456,29 @@ Mail: usuario@bbva.com`;
     if (intent === "saludo") {
       return "¡Hola! 👋 Soy Diana. ¿En qué proceso te puedo ayudar hoy?";
     }
+    
+    if (
+  imageAnalysis &&
+  (
+    t.includes("captura") ||
+    t.includes("imagen") ||
+    t.includes("pantalla") ||
+    t.includes("que hago") ||
+    t.includes("qué hago")
+  )
+) {
+  return `🖼️ Estoy revisando la captura que cargaste.
 
+Con base en la información disponible:
+
+1. Identifica la pantalla actual.
+2. Localiza el menú principal.
+3. Busca la opción relacionada con tu proceso.
+4. Sigue las indicaciones del manual correspondiente.
+
+Si me indicas si es Helix, Jira, IAM, Citrix o Teradata, puedo darte pasos más precisos.`;
+}
+    
     return `🤖 Puedo ayudarte con:
 
 ✅ Teradata
@@ -558,7 +607,35 @@ Escríbeme qué necesitas y te guío paso a paso.`;
 
     window.open(links[type], "_blank", "noopener,noreferrer");
   }
+async function extraerTextoPDF(file) {
+  try {
+    const arrayBuffer = await file.arrayBuffer();
 
+    const pdf = await pdfjsLib.getDocument({
+      data: arrayBuffer
+    }).promise;
+
+    let textoCompleto = "";
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+
+      const content = await page.getTextContent();
+
+      const textoPagina = content.items
+        .map((item) => item.str)
+        .join(" ");
+
+      textoCompleto += "\n\n" + textoPagina;
+    }
+
+    return textoCompleto;
+  } catch (error) {
+    console.error(error);
+
+    return "No pude leer el PDF.";
+  }
+}
   function handleFileUpload(event) {
     const files = Array.from(event.target.files);
 
@@ -572,18 +649,43 @@ Escríbeme qué necesitas y te guío paso a paso.`;
     setUploadedFiles((prev) => [...nuevosArchivos, ...prev]);
 
     const pdf = files.find((f) => f.type.includes("pdf"));
+    const image = files.find((f) =>
+  f.type.includes("image")
+);
+
+if (image) {
+  setImageAnalysis(`
+🖼️ Captura detectada:
+${image.name}
+
+Diana puede ayudarte a:
+
+✅ Identificar pantallas
+✅ Guiarte paso a paso
+✅ Validar evidencias
+✅ Revisar formularios
+✅ Explicarte qué hacer a continuación
+
+Describe qué dudas tienes sobre la captura.
+  `);
+}
 
     if (pdf) {
-      setPdfText(`📄 Documento detectado:
+  const textoPDF = await extraerTextoPDF(pdf);
+
+  setPdfText(`
+📄 Documento detectado:
 ${pdf.name}
 
-Diana ya puede:
-✅ Mostrar el documento
-✅ Abrir el PDF
-✅ Usarlo como evidencia
-✅ Buscar información
-✅ Resumir contenido manualmente`);
-    }
+━━━━━━━━━━━━━━━━━━━━━━
+
+${textoPDF.substring(0, 3000)}
+
+━━━━━━━━━━━━━━━━━━━━━━
+
+Fin de vista previa
+`);
+}
 
     setMessages((prev) => [
       ...prev,
@@ -1114,6 +1216,20 @@ const pulseAvatar = {
             <div style={{ ...styles.card, marginBottom: "18px" }}>
               <h3 style={styles.cyan}>📂 Archivos adjuntos</h3>
               {pdfText && <div style={{ marginTop: "12px", padding: "12px", borderRadius: "14px", background: "#061428", border: `1px solid ${currentTheme.accent}`, whiteSpace: "pre-wrap" }}>{pdfText}</div>}
+              {imageAnalysis && (
+  <div
+    style={{
+      marginTop: "12px",
+      padding: "12px",
+      borderRadius: "14px",
+      background: "#061428",
+      border: `1px solid ${currentTheme.accent}`,
+      whiteSpace: "pre-wrap"
+    }}
+  >
+    {imageAnalysis}
+  </div>
+)}
               {uploadedFiles.length === 0 ? (
                 <p style={{ color: "#94a3b8" }}>No hay archivos cargados.</p>
               ) : (
