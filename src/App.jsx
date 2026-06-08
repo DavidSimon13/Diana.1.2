@@ -1,5 +1,9 @@
 import React, { useState } from "react";
 import * as pdfjsLib from "pdfjs-dist";
+import pdfjsWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
+import Tesseract from "tesseract.js";
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 export default function App() {
   const [viewMode, setViewMode] = useState("full");
@@ -8,12 +12,6 @@ export default function App() {
   const [visualStep, setVisualStep] = useState(0);
   const [visualQuestion, setVisualQuestion] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
-  const [serviceStatus] = useState({
-    vpn: "operativo",
-    iam: "operativo",
-    citrix: "degradado",
-    teradata: "operativo"
-  });
   const [lastAction, setLastAction] = useState(null);
   const [manualSearch, setManualSearch] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState([]);
@@ -25,6 +23,15 @@ export default function App() {
   const [theme, setTheme] = useState("BBVA Premium");
   const [guideActive, setGuideActive] = useState(false);
   const [guideStep, setGuideStep] = useState(0);
+  const [guideType, setGuideType] = useState(null);
+
+  const [serviceStatus] = useState({
+    vpn: "operativo",
+    iam: "operativo",
+    citrix: "degradado",
+    teradata: "operativo"
+  });
+
   const [contexto, setContexto] = useState({
     procesoActual: null,
     ultimoPaso: null,
@@ -32,10 +39,12 @@ export default function App() {
     area: null,
     ultimoGenerador: null
   });
+
   const [messages, setMessages] = useState([
     {
       role: "diana",
-      text: "Hola 👋 Soy Diana, tu copiloto inteligente BBVA. Estoy aquí para ayudarte con procesos, soporte, accesos, formatos, Jira, Helix, VPN, Citrix, IAM y Teradata."
+      text:
+        "Hola 👋 Soy Diana, tu copiloto inteligente BBVA. Estoy aquí para ayudarte con procesos, soporte, accesos, formatos, Jira, Helix, VPN, Citrix, IAM y Teradata."
     }
   ]);
 
@@ -48,56 +57,52 @@ export default function App() {
   const avatar = avatars[skinTone];
 
   const themeColors = {
-  "BBVA Premium": {
-    bg: "linear-gradient(135deg,#020817,#061428,#082f49)",
-    card: "rgba(8,26,47,.92)",
-    sidebar: "#020b16",
-    accent: "#38bdf8",
-    glow: "#38bdf8",
-    text: "white"
-  },
-
-  "Oscuro Profesional": {
-    bg: "linear-gradient(135deg,#000000,#111827,#1f2937)",
-    card: "rgba(15,23,42,.95)",
-    sidebar: "#020617",
-    accent: "#60a5fa",
-    glow: "#60a5fa",
-    text: "white"
-  },
-
-  "Turquesa Tecnológico": {
-    bg: "linear-gradient(135deg,#022c22,#064e3b,#0f766e)",
-    card: "rgba(4,120,87,.20)",
-    sidebar: "#022c22",
-    accent: "#2dd4bf",
-    glow: "#2dd4bf",
-    text: "white"
-  },
-
-  "Púrpura Creativo": {
-    bg: "linear-gradient(135deg,#1e032e,#3b0764,#581c87)",
-    card: "rgba(88,28,135,.25)",
-    sidebar: "#1e032e",
-    accent: "#c084fc",
-    glow: "#c084fc",
-    text: "white"
-  },
-
-  "Claro": {
-    bg: "#f8fafc",
-    card: "#ffffff",
-    sidebar: "#e2e8f0",
-    accent: "#2563eb",
-    glow: "#60a5fa",
-    text: "#0f172a"
-  }
-};
+    "BBVA Premium": {
+      bg: "linear-gradient(135deg,#020817,#061428,#082f49)",
+      card: "rgba(8,26,47,.92)",
+      sidebar: "#020b16",
+      accent: "#38bdf8",
+      glow: "#38bdf8",
+      text: "white"
+    },
+    "Oscuro Profesional": {
+      bg: "linear-gradient(135deg,#000000,#111827,#1f2937)",
+      card: "rgba(15,23,42,.95)",
+      sidebar: "#020617",
+      accent: "#60a5fa",
+      glow: "#60a5fa",
+      text: "white"
+    },
+    "Turquesa Tecnológico": {
+      bg: "linear-gradient(135deg,#022c22,#064e3b,#0f766e)",
+      card: "rgba(4,120,87,.20)",
+      sidebar: "#022c22",
+      accent: "#2dd4bf",
+      glow: "#2dd4bf",
+      text: "white"
+    },
+    "Púrpura Creativo": {
+      bg: "linear-gradient(135deg,#1e032e,#3b0764,#581c87)",
+      card: "rgba(88,28,135,.25)",
+      sidebar: "#1e032e",
+      accent: "#c084fc",
+      glow: "#c084fc",
+      text: "white"
+    },
+    Claro: {
+      bg: "#f8fafc",
+      card: "#ffffff",
+      sidebar: "#e2e8f0",
+      accent: "#2563eb",
+      glow: "#60a5fa",
+      text: "#0f172a"
+    }
+  };
 
   const currentTheme = themeColors[theme];
 
   function normalizar(texto) {
-    return texto
+    return String(texto || "")
       .toLowerCase()
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "");
@@ -106,21 +111,6 @@ export default function App() {
   function copiarTexto(texto) {
     navigator.clipboard.writeText(texto);
     alert("Texto copiado ✅");
-  }
-
-  function actualizarContexto(intent, texto) {
-    setContexto((prev) => ({
-      ...prev,
-      procesoActual: intent !== "general" ? intent : prev.procesoActual,
-      ultimoPaso: texto,
-      ultimoGenerador:
-        intent === "vobo" ||
-        intent === "dml" ||
-        intent === "jira" ||
-        intent === "helix"
-          ? intent
-          : prev.ultimoGenerador
-    }));
   }
 
   function detectarIntencion(texto) {
@@ -147,8 +137,19 @@ export default function App() {
     }
 
     if (t.includes("hola") || t.includes("buen dia") || t.includes("buenas")) return "saludo";
-
     return "general";
+  }
+
+  function actualizarContexto(intent, texto) {
+    setContexto((prev) => ({
+      ...prev,
+      procesoActual: intent !== "general" ? intent : prev.procesoActual,
+      ultimoPaso: texto,
+      ultimoGenerador:
+        intent === "vobo" || intent === "dml" || intent === "jira" || intent === "helix"
+          ? intent
+          : prev.ultimoGenerador
+    }));
   }
 
   function generarTicketJira() {
@@ -230,8 +231,9 @@ Se procede con el cierre del caso.
 
 Saludos.`;
   }
-function generarCorreosVoBoAmbos() {
-  return `📧 Correos Vo.Bo. generados
+
+  function generarCorreosVoBoAmbos() {
+    return `📧 Correos Vo.Bo. generados
 
 ━━━━━━━━━━━━━━━━━━━━━━
 CORREO 1 — Para el usuario
@@ -271,23 +273,22 @@ Este movimiento es por reasignación:
 Quedo atento a tu amable Vo.Bo.
 
 Saludos.`;
-}
+  }
+
   function responder(txt) {
     const t = normalizar(txt);
     const intent = detectarIntencion(txt);
+
     if (
-  pdfText &&
-  (
-    t.includes("pdf") ||
-    t.includes("documento") ||
-    t.includes("manual") ||
-    t.includes("resume") ||
-    t.includes("resumen") ||
-    t.includes("que dice") ||
-    t.includes("qué dice")
-  )
-) {
-  return `📄 Revisé el documento cargado.
+      pdfText &&
+      (t.includes("pdf") ||
+        t.includes("documento") ||
+        t.includes("manual") ||
+        t.includes("resume") ||
+        t.includes("resumen") ||
+        t.includes("que dice"))
+    ) {
+      return `📄 Revisé el documento cargado.
 
 Esto es lo más relevante que encontré:
 
@@ -299,7 +300,25 @@ Si quieres, puedo ayudarte a convertirlo en:
 ✅ checklist
 ✅ correo
 ✅ comentario Helix`;
-}
+    }
+
+    if (
+      imageAnalysis &&
+      (t.includes("captura") ||
+        t.includes("imagen") ||
+        t.includes("pantalla") ||
+        t.includes("que ves") ||
+        t.includes("que dice") ||
+        t.includes("que hago"))
+    ) {
+      return `🖼️ Analicé la captura.
+
+Esto es lo que encontré:
+
+${imageAnalysis}
+
+Si me indicas qué proceso estás realizando, puedo guiarte paso a paso.`;
+    }
 
     if (t.includes("ya tengo el vobo") || t.includes("ya tengo el vo.bo")) {
       return `Perfecto 👌
@@ -313,6 +332,17 @@ Como ya tienes el Vo.Bo., el siguiente paso es:
 5. Dar seguimiento hasta confirmación.
 
 ¿Quieres que te genere el comentario Helix o el ticket Jira?`;
+    }
+
+    if (
+      t.includes("genera el de ambos") ||
+      t.includes("generame el de ambos") ||
+      t.includes("genérame el de ambos") ||
+      t.includes("correo de ambos") ||
+      t.includes("ambos vobo") ||
+      t.includes("ambos vo.bo")
+    ) {
+      return generarCorreosVoBoAmbos();
     }
 
     if (intent === "jira") {
@@ -334,20 +364,7 @@ Como ya tienes el Vo.Bo., el siguiente paso es:
       actualizarContexto("cierre", txt);
       return generarCierre();
     }
-    
-    if (
-      t.includes("genera el de ambos") ||
-      t.includes("generame el de ambos") ||
-      t.includes("genérame el de ambos") ||
-      t.includes("correo de ambos") ||
-      t.includes("ambos vobo") ||
-      t.includes("ambos vo.bo") ||
-      t === "si" ||
-      t === "sí"
-    ) {
-  return generarCorreosVoBoAmbos();
-}
-    
+
     if (intent === "vobo") {
       return `📧 Mensaje para solicitar Vo.Bo.
 
@@ -456,29 +473,7 @@ Mail: usuario@bbva.com`;
     if (intent === "saludo") {
       return "¡Hola! 👋 Soy Diana. ¿En qué proceso te puedo ayudar hoy?";
     }
-    
-    if (
-  imageAnalysis &&
-  (
-    t.includes("captura") ||
-    t.includes("imagen") ||
-    t.includes("pantalla") ||
-    t.includes("que hago") ||
-    t.includes("qué hago")
-  )
-) {
-  return `🖼️ Estoy revisando la captura que cargaste.
 
-Con base en la información disponible:
-
-1. Identifica la pantalla actual.
-2. Localiza el menú principal.
-3. Busca la opción relacionada con tu proceso.
-4. Sigue las indicaciones del manual correspondiente.
-
-Si me indicas si es Helix, Jira, IAM, Citrix o Teradata, puedo darte pasos más precisos.`;
-}
-    
     return `🤖 Puedo ayudarte con:
 
 ✅ Teradata
@@ -494,46 +489,48 @@ Escríbeme qué necesitas y te guío paso a paso.`;
   }
 
   function send(text = message) {
-  if (!text.trim()) return;
+    if (!text.trim()) return;
 
-  const userText = text;
-  const intent = detectarIntencion(userText);
+    const userText = text;
+    const intent = detectarIntencion(userText);
 
-  setMessages((prev) => [...prev, { role: "user", text: userText }]);
-  setMessage("");
+    setMessages((prev) => [...prev, { role: "user", text: userText }]);
+    setMessage("");
+    setVisualQuestion("");
 
-  if (guideActive) {
+    if (
+      guideActive &&
+      !normalizar(userText).includes("genera el de ambos") &&
+      !normalizar(userText).includes("correo de ambos")
+    ) {
+      setTimeout(() => {
+        nextGuideStep(userText);
+      }, 400);
+      return;
+    }
+
+    const respuestaDiana = responder(userText);
+
+    setLastAction(intent);
+    setIsTyping(true);
+
+    setChatHistory((prev) => [
+      {
+        titulo: userText.length > 28 ? userText.slice(0, 28) + "..." : userText,
+        proceso: intent,
+        fecha: new Date().toLocaleTimeString()
+      },
+      ...prev
+    ]);
+
     setTimeout(() => {
-      nextGuideStep(userText);
-    }, 400);
-    return;
+      setMessages((prev) => [...prev, { role: "diana", text: respuestaDiana }]);
+      setIsTyping(false);
+    }, 700);
   }
 
-  const respuestaDiana = responder(userText);
-
-  setLastAction(intent);
-  setIsTyping(true);
-
-  setChatHistory((prev) => [
-    {
-      titulo: userText.length > 28 ? userText.slice(0, 28) + "..." : userText,
-      proceso: intent,
-      fecha: new Date().toLocaleTimeString()
-    },
-    ...prev
-  ]);
-
-  setTimeout(() => {
-    setMessages((prev) => [...prev, { role: "diana", text: respuestaDiana }]);
-    setIsTyping(false);
-  }, 700);
-}
-
-  function getGuideSteps() {
-    const lastUserMessage = [...messages].reverse().find((m) => m.role === "user");
-    const context = lastUserMessage ? normalizar(lastUserMessage.text) : "";
-
-    if (context.includes("teradata")) {
+  function getGuideSteps(type = guideType) {
+    if (type === "teradata") {
       return [
         "📘 Guía Teradata - Paso 1\n\nConfirma si el usuario ya cuenta con licencia o si será reasignación.",
         "📘 Guía Teradata - Paso 2\n\nSolicita el Vo.Bo. del usuario que cede la licencia y del N4 del usuario receptor.\n\n¿Ya cuentas con ambos Vo.Bo.?\n\nTambién puedo generarte los correos para ambos.",
@@ -543,63 +540,85 @@ Escríbeme qué necesitas y te guío paso a paso.`;
       ];
     }
 
-    return ["📘 Modo guía activado.\n\nSelecciona una opción para comenzar."];
+    if (type === "vpn") {
+      return [
+        "🔐 Guía VPN - Paso 1\n\nCierra VPN completamente.",
+        "🔐 Guía VPN - Paso 2\n\nReinicia el equipo y abre Cisco nuevamente.",
+        "🔐 Guía VPN - Paso 3\n\nIntenta conectarte.",
+        "🔐 Guía VPN - Paso 4\n\nSi persiste, contacta soporte VPN."
+      ];
+    }
+
+    if (type === "citrix") {
+      return [
+        "🖥️ Guía Citrix - Paso 1\n\nConfirma si es bloqueo de usuario o error Citrix.",
+        "🖥️ Guía Citrix - Paso 2\n\nReporta al 55 5522 61190.",
+        "🖥️ Guía Citrix - Paso 3\n\nValida nuevamente tu acceso."
+      ];
+    }
+
+    return ["📘 Modo guía activado.\n\nEscríbeme el proceso que necesitas: Teradata, VPN, Citrix, IAM o DML."];
   }
 
   function startGuide() {
-  const steps = getGuideSteps();
+    const lastUserMessage = [...messages].reverse().find((m) => m.role === "user");
+    const detected = lastUserMessage ? detectarIntencion(lastUserMessage.text) : "general";
+    const selectedGuide = detected === "general" ? "teradata" : detected;
+    const steps = getGuideSteps(selectedGuide);
 
-  setGuideActive(true);
-  setGuideStep(0);
-
-  setMessages((prev) => [
-    ...prev,
-    {
-      role: "diana",
-      text: steps[0],
-      guide: true
-    }
-  ]);
-}
-
-  function nextGuideStep(userAnswer = "") {
-  const steps = getGuideSteps();
-  const nextStep = guideStep + 1;
-
-  if (nextStep >= steps.length) {
-    setGuideActive(false);
+    setGuideType(selectedGuide);
+    setGuideActive(true);
     setGuideStep(0);
 
     setMessages((prev) => [
       ...prev,
       {
         role: "diana",
-        text:
-          "✅ Guía terminada. Ya tienes los pasos principales para continuar."
+        text: steps[0],
+        guide: true
       }
     ]);
-
-    return;
   }
 
-  setGuideStep(nextStep);
+  function nextGuideStep(userAnswer = "") {
+    const steps = getGuideSteps(guideType);
+    const nextStep = guideStep + 1;
 
-  setMessages((prev) => [
-    ...prev,
-    {
-      role: "diana",
-      text:
-        userAnswer.trim() !== ""
-          ? `Perfecto, tomo en cuenta tu respuesta: "${userAnswer}".\n\n${steps[nextStep]}`
-          : steps[nextStep],
-      guide: true
+    if (nextStep >= steps.length) {
+      setGuideActive(false);
+      setGuideStep(0);
+      setGuideType(null);
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "diana",
+          text: "✅ Guía terminada. Ya tienes los pasos principales para continuar."
+        }
+      ]);
+
+      return;
     }
-  ]);
-}
+
+    setGuideStep(nextStep);
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "diana",
+        text:
+          userAnswer.trim() !== ""
+            ? `Perfecto, tomo en cuenta tu respuesta: "${userAnswer}".\n\n${steps[nextStep]}`
+            : steps[nextStep],
+        guide: true
+      }
+    ]);
+  }
 
   function openLink(type) {
     const links = {
-      vpn: "https://docs.google.com/presentation/d/1gOInm65Oesu6MtUaAefto_uc2FJsB4H8GF6vZxt_xi4/edit?slide=id.g3356b0b5634_127_70#slide=id.g3356b0b5634_127_70",
+      vpn:
+        "https://docs.google.com/presentation/d/1gOInm65Oesu6MtUaAefto_uc2FJsB4H8GF6vZxt_xi4/edit?slide=id.g3356b0b5634_127_70#slide=id.g3356b0b5634_127_70",
       teradata: "https://docs.google.com",
       iam: "https://docs.google.com",
       dml: "https://docs.google.com"
@@ -607,36 +626,51 @@ Escríbeme qué necesitas y te guío paso a paso.`;
 
     window.open(links[type], "_blank", "noopener,noreferrer");
   }
-async function extraerTextoPDF(file) {
-  try {
-    const arrayBuffer = await file.arrayBuffer();
 
-    const pdf = await pdfjsLib.getDocument({
-      data: arrayBuffer
-    }).promise;
+  async function extraerTextoPDF(file) {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      let textoCompleto = "";
 
-    let textoCompleto = "";
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        const textoPagina = content.items.map((item) => item.str).join(" ");
+        textoCompleto += "\n\n" + textoPagina;
+      }
 
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-
-      const content = await page.getTextContent();
-
-      const textoPagina = content.items
-        .map((item) => item.str)
-        .join(" ");
-
-      textoCompleto += "\n\n" + textoPagina;
+      return textoCompleto;
+    } catch (error) {
+      console.error(error);
+      return "No pude leer el PDF.";
     }
-
-    return textoCompleto;
-  } catch (error) {
-    console.error(error);
-
-    return "No pude leer el PDF.";
   }
-}
-  function handleFileUpload(event) {
+
+  async function leerImagenOCR(file) {
+    try {
+      const result = await Tesseract.recognize(file, "spa");
+      return result.data.text;
+    } catch (error) {
+      console.error(error);
+      return "No pude leer la imagen.";
+    }
+  }
+
+  function detectarProcesoOCR(textoOCR) {
+    const t = normalizar(textoOCR);
+
+    if (t.includes("vpn") || t.includes("cisco") || t.includes("certificate")) return "vpn";
+    if (t.includes("citrix") || t.includes("daas") || t.includes("workspace")) return "citrix";
+    if (t.includes("jira") || t.includes("issue") || t.includes("ticket")) return "jira";
+    if (t.includes("helix") || t.includes("peticion") || t.includes("incidente")) return "helix";
+    if (t.includes("iam") || t.includes("plantilla") || t.includes("acceso")) return "iam";
+    if (t.includes("teradata") || t.includes("klarmxpu") || t.includes("klarmxpv")) return "teradata";
+
+    return "general";
+  }
+
+  async function handleFileUpload(event) {
     const files = Array.from(event.target.files);
 
     const nuevosArchivos = files.map((file) => ({
@@ -649,32 +683,49 @@ async function extraerTextoPDF(file) {
     setUploadedFiles((prev) => [...nuevosArchivos, ...prev]);
 
     const pdf = files.find((f) => f.type.includes("pdf"));
-    const image = files.find((f) =>
-  f.type.includes("image")
-);
+    const image = files.find((f) => f.type.includes("image"));
 
-if (image) {
-  setImageAnalysis(`
-🖼️ Captura detectada:
+    if (image) {
+      const textoImagen = await leerImagenOCR(image);
+      const procesoOCR = detectarProcesoOCR(textoImagen);
+
+      setLastAction(procesoOCR);
+
+      setImageAnalysis(`🖼️ Captura detectada:
 ${image.name}
 
-Diana puede ayudarte a:
+Proceso detectado:
+${procesoOCR.toUpperCase()}
 
-✅ Identificar pantallas
-✅ Guiarte paso a paso
-✅ Validar evidencias
-✅ Revisar formularios
-✅ Explicarte qué hacer a continuación
+━━━━━━━━━━━━━━━━━━━━━━
 
-Describe qué dudas tienes sobre la captura.
-  `);
-}
+${textoImagen.substring(0, 2000)}
+
+━━━━━━━━━━━━━━━━━━━━━━
+
+Diana puede ayudarte a interpretar esta información.`);
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "diana",
+          text: `🖼️ Analicé tu captura.
+
+Detecté posible proceso:
+${procesoOCR.toUpperCase()}
+
+Puedes preguntarme:
+- ¿Qué dice esta pantalla?
+- ¿Qué hago ahora?
+- Guíame paso a paso`
+        }
+      ]);
+    }
 
     if (pdf) {
-  const textoPDF = await extraerTextoPDF(pdf);
+      const textoPDF = await extraerTextoPDF(pdf);
 
-  setPdfText(`
-📄 Documento detectado:
+      setPdfText(`📄 Documento detectado:
 ${pdf.name}
 
 ━━━━━━━━━━━━━━━━━━━━━━
@@ -683,9 +734,8 @@ ${textoPDF.substring(0, 3000)}
 
 ━━━━━━━━━━━━━━━━━━━━━━
 
-Fin de vista previa
-`);
-}
+Fin de vista previa`);
+    }
 
     setMessages((prev) => [
       ...prev,
@@ -701,75 +751,75 @@ Puedo ayudarte a:
 ✅ Guiarte con archivos`
       }
     ]);
+
+    event.target.value = "";
   }
 
   function abrirGuiaVisual(tipo) {
-  const guias = {
-    teradata: {
-      titulo: "Alta Usuario Teradata",
-      descripcion: "Diana te guía usando el manual PDF de Teradata.",
-      pasos: [
-        {
-          texto: "Revisa el inicio del manual de alta Teradata.",
-          pdf: "/Manual Alta usuario Teradata.pptx.pdf#page=1"
-        },
-        {
-          texto: "Ubica el proceso de solicitud o reasignación.",
-          pdf: "/Manual Alta usuario Teradata.pptx.pdf#page=2"
-        },
-        {
-          texto: "Valida los datos requeridos del usuario.",
-          pdf: "/Manual Alta usuario Teradata.pptx.pdf#page=3"
-        },
-        {
-          texto: "Adjunta Vo.Bo. y continúa con Helix/Jira.",
-          pdf: "/Manual Alta usuario Teradata.pptx.pdf#page=4"
-        }
-      ]
-    },
+    const guias = {
+      teradata: {
+        titulo: "Alta Usuario Teradata",
+        descripcion: "Diana te guía usando el manual PDF de Teradata.",
+        pasos: [
+          {
+            texto: "Revisa el inicio del manual de alta Teradata.",
+            pdf: "/Manual Alta usuario Teradata.pptx.pdf#page=1"
+          },
+          {
+            texto: "Ubica el proceso de solicitud o reasignación.",
+            pdf: "/Manual Alta usuario Teradata.pptx.pdf#page=2"
+          },
+          {
+            texto: "Valida los datos requeridos del usuario.",
+            pdf: "/Manual Alta usuario Teradata.pptx.pdf#page=3"
+          },
+          {
+            texto: "Adjunta Vo.Bo. y continúa con Helix/Jira.",
+            pdf: "/Manual Alta usuario Teradata.pptx.pdf#page=4"
+          }
+        ]
+      },
+      vpn: {
+        titulo: "Guía visual VPN / Citrix",
+        descripcion: "Diana te muestra el manual relacionado con acceso remoto.",
+        pasos: [
+          {
+            texto: "Revisa la guía de acceso Citrix.",
+            pdf: "/Guía de Acceso a Citrix DaaS.pdf#page=1"
+          },
+          {
+            texto: "Sigue los pasos de conexión.",
+            pdf: "/Guía de Acceso a Citrix DaaS.pdf#page=2"
+          },
+          {
+            texto: "Valida errores comunes.",
+            pdf: "/Guía de Acceso a Citrix DaaS.pdf#page=3"
+          }
+        ]
+      },
+      iam: {
+        titulo: "Guía visual IAM / Jira / Helix",
+        descripcion: "Diana te guía usando los manuales de Jira y Helix.",
+        pasos: [
+          {
+            texto: "Revisa el manual de solicitudes Innovation MX Jira.",
+            pdf: "/Manual Solicitudes_Innovation_MX_JIRA.pdf#page=1"
+          },
+          {
+            texto: "Revisa el manual de peticiones Helix - Jira Soporte MX.",
+            pdf: "/Manual de Peticiones Helix - Jira Soporte MX.pdf#page=1"
+          },
+          {
+            texto: "Valida la evidencia y comentarios necesarios.",
+            pdf: "/Vo.Bo.pdf#page=1"
+          }
+        ]
+      }
+    };
 
-    vpn: {
-      titulo: "Guía visual VPN / Citrix",
-      descripcion: "Diana te muestra el manual relacionado con acceso remoto.",
-      pasos: [
-        {
-          texto: "Revisa la guía de acceso Citrix.",
-          pdf: "/Guía de Acceso a Citrix DaaS.pdf#page=1"
-        },
-        {
-          texto: "Sigue los pasos de conexión.",
-          pdf: "/Guía de Acceso a Citrix DaaS.pdf#page=2"
-        },
-        {
-          texto: "Valida errores comunes.",
-          pdf: "/Guía de Acceso a Citrix DaaS.pdf#page=3"
-        }
-      ]
-    },
-
-    iam: {
-      titulo: "Guía visual IAM / Jira / Helix",
-      descripcion: "Diana te guía usando los manuales de Jira y Helix.",
-      pasos: [
-        {
-          texto: "Revisa el manual de solicitudes Innovation MX Jira.",
-          pdf: "/Manual Solicitudes_Innovation_MX_JIRA.pdf#page=1"
-        },
-        {
-          texto: "Revisa el manual de peticiones Helix - Jira Soporte MX.",
-          pdf: "/Manual de Peticiones Helix - Jira Soporte MX.pdf#page=1"
-        },
-        {
-          texto: "Valida la evidencia y comentarios necesarios.",
-          pdf: "/Vo.Bo.pdf#page=1"
-        }
-      ]
-    }
-  };
-
-  setVisualGuide(guias[tipo]);
-  setVisualStep(0);
-}
+    setVisualGuide(guias[tipo]);
+    setVisualStep(0);
+  }
 
   const quickActions = [
     "Necesito dar de alta un usuario en Teradata",
@@ -785,7 +835,8 @@ Puedo ayudarte a:
       nombre: "Manual VPN",
       tipo: "vpn",
       descripcion: "Guía para alta VPN, errores Cisco y soporte.",
-      link: "https://docs.google.com/presentation/d/1gOInm65Oesu6MtUaAefto_uc2FJsB4H8GF6vZxt_xi4/edit?slide=id.g3356b0b5634_127_70#slide=id.g3356b0b5634_127_70"
+      link:
+        "https://docs.google.com/presentation/d/1gOInm65Oesu6MtUaAefto_uc2FJsB4H8GF6vZxt_xi4/edit?slide=id.g3356b0b5634_127_70#slide=id.g3356b0b5634_127_70"
     },
     {
       nombre: "Manual Teradata",
@@ -808,34 +859,30 @@ Puedo ayudarte a:
   ];
 
   const manualesFiltrados = manuales.filter((m) =>
-    `${m.nombre} ${m.tipo} ${m.descripcion}`
-      .toLowerCase()
-      .includes(manualSearch.toLowerCase())
+    `${m.nombre} ${m.tipo} ${m.descripcion}`.toLowerCase().includes(manualSearch.toLowerCase())
   );
-  
-const pulseAvatar = {
-  animation: "pulseDiana 2.4s infinite ease-in-out"
-};
+
+  const pulseAvatar = {
+    animation: "pulseDiana 2.4s infinite ease-in-out"
+  };
+
   const styles = {
     page: {
-  minHeight: viewMode === "floating" ? "720px" : "100vh",
-  width: viewMode === "floating" ? "460px" : "100%",
-  height: viewMode === "floating" ? "720px" : "auto",
-  position: viewMode === "floating" ? "fixed" : "relative",
-  right: viewMode === "floating" ? "24px" : "auto",
-  bottom: viewMode === "floating" ? "24px" : "auto",
-  borderRadius: viewMode === "floating" ? "28px" : "0px",
-  overflow: "hidden",
-  background: currentTheme.bg,
-  color: "white",
-  fontFamily: "Inter, Arial, sans-serif",
-  display: "flex",
-  zIndex: 900,
-  boxShadow:
-    viewMode === "floating"
-      ? `0 0 45px ${currentTheme.accent}55`
-      : "none"
-},
+      minHeight: viewMode === "floating" ? "720px" : "100vh",
+      width: viewMode === "floating" ? "460px" : "100%",
+      height: viewMode === "floating" ? "720px" : "auto",
+      position: viewMode === "floating" ? "fixed" : "relative",
+      right: viewMode === "floating" ? "24px" : "auto",
+      bottom: viewMode === "floating" ? "24px" : "auto",
+      borderRadius: viewMode === "floating" ? "28px" : "0px",
+      overflow: "hidden",
+      background: currentTheme.bg,
+      color: currentTheme.text,
+      fontFamily: "Inter, Arial, sans-serif",
+      display: "flex",
+      zIndex: 900,
+      boxShadow: viewMode === "floating" ? `0 0 45px ${currentTheme.accent}55` : "none"
+    },
     sidebar: {
       width: "290px",
       background: currentTheme.sidebar,
@@ -854,9 +901,12 @@ const pulseAvatar = {
       border: `1px solid ${currentTheme.accent}`,
       borderRadius: "24px",
       padding: "22px",
-      boxShadow: `0 0 30px ${currentTheme.accent}33`
+      boxShadow: `0 0 30px ${currentTheme.accent}33`,
+      color: currentTheme.text
     },
-    cyan: { color: currentTheme.accent },
+    cyan: {
+      color: currentTheme.accent
+    },
     button: {
       background: currentTheme.accent,
       color: "black",
@@ -873,6 +923,13 @@ const pulseAvatar = {
       borderRadius: "16px",
       padding: "12px 16px",
       cursor: "pointer"
+    },
+    input: {
+      background: "#0b2747",
+      color: "white",
+      border: `1px solid ${currentTheme.accent}`,
+      borderRadius: "14px",
+      outline: "none"
     }
   };
 
@@ -880,68 +937,22 @@ const pulseAvatar = {
     <>
       <style>
         {`
-    @keyframes pulseDiana {
-      0% {
-        transform: scale(1);
-        filter: drop-shadow(0 0 10px ${currentTheme.glow});
-      }
-      50% {
-        transform: scale(1.04);
-        filter: drop-shadow(0 0 28px ${currentTheme.glow});
-      }
-      100% {
-        transform: scale(1);
-        filter: drop-shadow(0 0 10px ${currentTheme.glow});
-      }
-    }
-    @media (max-width: 900px) {
-  .diana-layout {
-    flex-direction: column !important;
-  }
+          @keyframes pulseDiana {
+            0% { transform: scale(1); filter: drop-shadow(0 0 10px ${currentTheme.glow}); }
+            50% { transform: scale(1.04); filter: drop-shadow(0 0 28px ${currentTheme.glow}); }
+            100% { transform: scale(1); filter: drop-shadow(0 0 10px ${currentTheme.glow}); }
+          }
 
-  .diana-sidebar {
-    width: auto !important;
-  }
+          @media (max-width: 900px) {
+            .diana-layout { flex-direction: column !important; }
+            .diana-sidebar { width: auto !important; }
+            .diana-main { display: block !important; padding: 14px !important; }
+            .diana-right-panel { margin-top: 18px !important; }
+            .diana-hero { flex-direction: column !important; text-align: center !important; }
+          }
+        `}
+      </style>
 
-  .diana-main {
-    display: block !important;
-    padding: 14px !important;
-  }
-
-  .diana-right-panel {
-    margin-top: 18px !important;
-  }
-
-  .diana-hero {
-    flex-direction: column !important;
-    text-align: center !important;
-  }
-}
-    @media (max-width: 900px) {
-  .diana-layout {
-    flex-direction: column !important;
-  }
-
-  .diana-sidebar {
-    width: auto !important;
-  }
-
-  .diana-main {
-    display: block !important;
-    padding: 14px !important;
-  }
-
-  .diana-right-panel {
-    margin-top: 18px !important;
-  }
-
-  .diana-hero {
-    flex-direction: column !important;
-    text-align: center !important;
-  }
-}
-  `}
-</style>
       <button
         onClick={() => setShowSettings(!showSettings)}
         style={{
@@ -963,28 +974,34 @@ const pulseAvatar = {
       </button>
 
       {showSettings && (
-        <div style={{ position: "fixed", top: "84px", right: "20px", width: "380px", zIndex: 998, ...styles.card }}>
+        <div
+          style={{
+            position: "fixed",
+            top: "84px",
+            right: "20px",
+            width: "380px",
+            zIndex: 998,
+            ...styles.card
+          }}
+        >
           <h3 style={styles.cyan}>Configuración de Diana</h3>
+
           <button
-  onClick={() =>
-    setViewMode(viewMode === "floating" ? "full" : "floating")
-  }
-  style={{
-    ...styles.ghostButton,
-    width: "100%",
-    marginBottom: "12px"
-  }}
->
-  {viewMode === "floating"
-    ? "🖥️ Cambiar a pantalla completa"
-    : "🪟 Cambiar a modo flotante"}
-</button>
+            onClick={() => setViewMode(viewMode === "floating" ? "full" : "floating")}
+            style={{ ...styles.ghostButton, width: "100%", marginBottom: "12px" }}
+          >
+            {viewMode === "floating" ? "🖥️ Cambiar a pantalla completa" : "🪟 Cambiar a modo flotante"}
+          </button>
 
           <label>Color de piel</label>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px", marginTop: "10px" }}>
             {Object.entries(avatars).map(([tone, img]) => (
               <button key={tone} onClick={() => setSkinTone(tone)} style={styles.ghostButton}>
-                <img src={img} alt={tone} style={{ width: "100%", height: "85px", objectFit: "cover", borderRadius: "10px" }} />
+                <img
+                  src={img}
+                  alt={tone}
+                  style={{ width: "100%", height: "85px", objectFit: "cover", borderRadius: "10px" }}
+                />
                 {tone}
               </button>
             ))}
@@ -994,7 +1011,7 @@ const pulseAvatar = {
           <select
             value={theme}
             onChange={(e) => setTheme(e.target.value)}
-            style={{ width: "100%", padding: "12px", borderRadius: "12px", background: "#061428", color: "white" }}
+            style={{ width: "100%", padding: "12px", ...styles.input }}
           >
             <option>BBVA Premium</option>
             <option>Oscuro Profesional</option>
@@ -1008,7 +1025,11 @@ const pulseAvatar = {
       <div className="diana-layout" style={styles.page}>
         <aside className="diana-sidebar" style={styles.sidebar}>
           <div style={{ display: "flex", gap: "14px", alignItems: "center" }}>
-            <img src={avatar} alt="Diana" style={{ width: "64px", height: "64px", borderRadius: "20px", objectFit: "cover" }} />
+            <img
+              src={avatar}
+              alt="Diana"
+              style={{ width: "64px", height: "64px", borderRadius: "20px", objectFit: "cover" }}
+            />
             <div>
               <h2 style={{ margin: 0, color: currentTheme.accent }}>Asistente Diana</h2>
               <p style={{ margin: "4px 0", color: "#94a3b8" }}>Copiloto BBVA</p>
@@ -1016,8 +1037,21 @@ const pulseAvatar = {
           </div>
 
           <div style={{ marginTop: "28px", display: "grid", gap: "12px" }}>
-            {["💬 Chat", "🏠 Inicio", "📚 Conocimiento", "📘 Guías paso a paso", "⚡ Generadores", "🔐 IAM / Accesos", "🧾 Jira / Helix", "🖥️ VPN / Citrix", "🚨 Impedimentos", "📊 Analysis 2.0"].map((item) => (
-              <div key={item} style={styles.ghostButton}>{item}</div>
+            {[
+              "💬 Chat",
+              "🏠 Inicio",
+              "📚 Conocimiento",
+              "📘 Guías paso a paso",
+              "⚡ Generadores",
+              "🔐 IAM / Accesos",
+              "🧾 Jira / Helix",
+              "🖥️ VPN / Citrix",
+              "🚨 Impedimentos",
+              "📊 Analysis 2.0"
+            ].map((item) => (
+              <div key={item} style={styles.ghostButton}>
+                {item}
+              </div>
             ))}
 
             <h3 style={styles.cyan}>🕘 Historial</h3>
@@ -1026,8 +1060,11 @@ const pulseAvatar = {
             ) : (
               chatHistory.slice(0, 5).map((item, index) => (
                 <div key={index} style={{ ...styles.ghostButton, fontSize: "12px" }}>
-                  <strong>{item.titulo}</strong><br />
-                  <span style={{ color: "#94a3b8" }}>{item.proceso} · {item.fecha}</span>
+                  <strong>{item.titulo}</strong>
+                  <br />
+                  <span style={{ color: "#94a3b8" }}>
+                    {item.proceso} · {item.fecha}
+                  </span>
                 </div>
               ))
             )}
@@ -1036,73 +1073,101 @@ const pulseAvatar = {
 
         <main className="diana-main" style={styles.main}>
           {visualGuide && (
-            <div style={{ position: "fixed", top: "90px", right: "430px", width: "560px", maxHeight: "82vh", overflowY: "auto", zIndex: 997, ...styles.card }}>
-              <button onClick={() => setVisualGuide(null)} style={{ float: "right", background: "transparent", color: "white", border: "none", fontSize: "24px", cursor: "pointer" }}>×</button>
+            <div
+              style={{
+                position: "fixed",
+                top: "90px",
+                right: "430px",
+                width: "560px",
+                maxHeight: "82vh",
+                overflowY: "auto",
+                zIndex: 997,
+                ...styles.card
+              }}
+            >
+              <button
+                onClick={() => setVisualGuide(null)}
+                style={{
+                  float: "right",
+                  background: "transparent",
+                  color: currentTheme.text,
+                  border: "none",
+                  fontSize: "24px",
+                  cursor: "pointer"
+                }}
+              >
+                ×
+              </button>
+
               <h2 style={styles.cyan}>📘 {visualGuide.titulo}</h2>
               <p>{visualGuide.descripcion}</p>
-              <div style={{ padding: "12px", borderRadius: "16px", background: "#0b2747", border: `1px solid ${currentTheme.accent}` }}>
-                <strong style={styles.cyan}>Paso {visualStep + 1} de {visualGuide.pasos.length}</strong>
+
+              <div
+                style={{
+                  padding: "12px",
+                  borderRadius: "16px",
+                  background: "#0b2747",
+                  border: `1px solid ${currentTheme.accent}`,
+                  color: "white"
+                }}
+              >
+                <strong style={styles.cyan}>
+                  Paso {visualStep + 1} de {visualGuide.pasos.length}
+                </strong>
                 <p>{visualGuide.pasos[visualStep].texto}</p>
-                <iframe src={visualGuide.pasos[visualStep].pdf} title="Demostración PDF" style={{ width: "100%", height: "420px", borderRadius: "16px", border: `2px solid ${currentTheme.accent}`, marginTop: "10px", background: "white" }} />
-              </div> 
-              
+
+                <iframe
+                  src={visualGuide.pasos[visualStep].pdf}
+                  title="Demostración PDF"
+                  style={{
+                    width: "100%",
+                    height: "420px",
+                    borderRadius: "16px",
+                    border: `2px solid ${currentTheme.accent}`,
+                    marginTop: "10px",
+                    background: "white"
+                  }}
+                />
+              </div>
+
               <div
                 style={{
                   marginTop: "16px",
                   padding: "14px",
                   borderRadius: "16px",
                   background: "#061428",
-                  border: `1px solid ${currentTheme.accent}`
+                  border: `1px solid ${currentTheme.accent}`,
+                  color: "white"
                 }}
               >
-                <strong style={styles.cyan}>
-                  🤖 ¿Tienes dudas sobre este paso?
-                
-              </strong>
-            <p
-              
-              style={{
-                color: "#94a3b8",
-                fontSize: "13px"
-              }}
-            >
-              Escríbeme y con gusto te ayudo.
-            
-            </p>
-          <div
-            style={{
-              display: "flex",
-              gap: "10px",
-              marginTop: "10px"
-            }}
-          >
-            <input
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Escribe tu mensaje..."
-              style={{
-                flex: 1,
-                padding: "12px",
-                borderRadius: "14px",
-                background: "#0b2747",
-                color: "white",
-                border: `1px solid ${currentTheme.accent}`,
-                outline: "none"
-              }}
-            />
-            
-            <button
-              onClick={() => send()}
-              style={styles.button}
-            >
-              ➤
-            </button>
-          </div>
-        </div>
-              
+                <strong style={styles.cyan}>🤖 ¿Tienes dudas sobre este paso?</strong>
+                <p style={{ color: "#94a3b8", fontSize: "13px" }}>
+                  Escríbeme y con gusto te ayudo.
+                </p>
+
+                <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+                  <input
+                    value={visualQuestion}
+                    onChange={(e) => setVisualQuestion(e.target.value)}
+                    placeholder="Escribe tu mensaje..."
+                    style={{ flex: 1, padding: "12px", ...styles.input }}
+                  />
+                  <button onClick={() => send(visualQuestion)} style={styles.button}>
+                    ➤
+                  </button>
+                </div>
+              </div>
+
               <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
-                <button onClick={() => setVisualStep(Math.max(visualStep - 1, 0))} style={styles.ghostButton}>← Anterior</button>
-                <button onClick={() => setVisualStep(Math.min(visualStep + 1, visualGuide.pasos.length - 1))} style={styles.button}>Siguiente →</button>
+                <button onClick={() => setVisualStep(Math.max(visualStep - 1, 0))} style={styles.ghostButton}>
+                  ← Anterior
+                </button>
+                <button
+                  onClick={() => setVisualStep(Math.min(visualStep + 1, visualGuide.pasos.length - 1))}
+                  style={styles.button}
+                >
+                  Siguiente →
+                </button>
               </div>
             </div>
           )}
@@ -1110,10 +1175,25 @@ const pulseAvatar = {
           <section>
             <div style={{ ...styles.card, marginBottom: "22px" }}>
               <div className="diana-hero" style={{ display: "flex", gap: "22px", alignItems: "center" }}>
-                <img src={avatar} alt="Diana avatar" style={{ width: "180px", height: "180px", borderRadius: "50%", objectFit: "cover", boxShadow: `0 0 45px ${currentTheme.glow}`,...pulseAvatar }} />
+                <img
+                  src={avatar}
+                  alt="Diana avatar"
+                  style={{
+                    width: "180px",
+                    height: "180px",
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                    boxShadow: `0 0 45px ${currentTheme.glow}`,
+                    ...pulseAvatar
+                  }}
+                />
                 <div>
-                  <h1 style={{ fontSize: "44px", margin: 0 }}>👋 Hola, soy <span style={styles.cyan}>Diana</span></h1>
-                  <p style={{ fontSize: "18px", color: "#cbd5e1" }}>Tu asistente inteligente BBVA para procesos, accesos, soporte y generación automática.</p>
+                  <h1 style={{ fontSize: "44px", margin: 0 }}>
+                    👋 Hola, soy <span style={styles.cyan}>Diana</span>
+                  </h1>
+                  <p style={{ fontSize: "18px", color: "#cbd5e1" }}>
+                    Tu asistente inteligente BBVA para procesos, accesos, soporte y generación automática.
+                  </p>
                   <div style={{ color: "#86efac" }}>● Diana Online</div>
                 </div>
               </div>
@@ -1121,20 +1201,41 @@ const pulseAvatar = {
 
             <div style={{ ...styles.card, height: "520px", overflowY: "auto" }}>
               {messages.map((m, idx) => (
-                <div key={idx} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start", marginBottom: "18px" }}>
-                  <div style={{ maxWidth: "78%", padding: "18px", borderRadius: "22px", background: m.role === "user" ? "#123d6b" : "#031525", border: `1px solid ${currentTheme.accent}` }}>
+                <div
+                  key={idx}
+                  style={{
+                    display: "flex",
+                    justifyContent: m.role === "user" ? "flex-end" : "flex-start",
+                    marginBottom: "18px"
+                  }}
+                >
+                  <div
+                    style={{
+                      maxWidth: "78%",
+                      padding: "18px",
+                      borderRadius: "22px",
+                      background: m.role === "user" ? "#123d6b" : "#031525",
+                      border: `1px solid ${currentTheme.accent}`,
+                      color: "white"
+                    }}
+                  >
                     <strong style={styles.cyan}>{m.role === "user" ? "Usuario" : "🤖 Diana"}</strong>
-                    <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", lineHeight: "1.6" }}>{m.text}</pre>
+                    <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", lineHeight: "1.6" }}>
+                      {m.text}
+                    </pre>
 
                     {m.role === "diana" && !guideActive && !m.guide && !m.text.includes("Modo guía activado") && (
-                      <button onClick={startGuide} style={styles.button}>Da click si deseas que te guíe →</button>
-                    )}
-                    
-                    {m.role === "diana" && guideActive && m.guide && (
-                      <button onClick={nextGuideStep} style={styles.button}>Siguiente paso →
+                      <button onClick={startGuide} style={styles.button}>
+                        Da click si deseas que te guíe →
                       </button>
                     )}
-                    
+
+                    {m.role === "diana" && guideActive && m.guide && (
+                      <button onClick={() => nextGuideStep()} style={styles.button}>
+                        Siguiente paso →
+                      </button>
+                    )}
+
                     {m.role === "diana" &&
                       guideActive &&
                       m.guide &&
@@ -1146,15 +1247,30 @@ const pulseAvatar = {
                           📧 ¿Quieres que te genere el de ambos?
                         </button>
                       )}
+
                     {m.role === "diana" && (
-                      <button onClick={() => copiarTexto(m.text)} style={{ ...styles.ghostButton, marginTop: "10px" }}>📋 Copiar respuesta</button>
+                      <button
+                        onClick={() => copiarTexto(m.text)}
+                        style={{ ...styles.ghostButton, marginTop: "10px" }}
+                      >
+                        📋 Copiar respuesta
+                      </button>
                     )}
                   </div>
                 </div>
               ))}
 
               {isTyping && (
-                <div style={{ maxWidth: "260px", padding: "14px 18px", borderRadius: "18px", background: "#031525", border: `1px solid ${currentTheme.accent}`, color: "#cbd5e1" }}>
+                <div
+                  style={{
+                    maxWidth: "260px",
+                    padding: "14px 18px",
+                    borderRadius: "18px",
+                    background: "#031525",
+                    border: `1px solid ${currentTheme.accent}`,
+                    color: "#cbd5e1"
+                  }}
+                >
                   🤖 Diana está escribiendo...
                 </div>
               )}
@@ -1173,19 +1289,33 @@ const pulseAvatar = {
                   if (e.key === "Enter") send();
                 }}
                 placeholder="Escribe tu mensaje..."
-                style={{ flex: 1, padding: "18px", borderRadius: "18px", background: "#0b2747", color: "white", border: `1px solid ${currentTheme.accent}` }}
+                style={{ flex: 1, padding: "18px", ...styles.input }}
               />
-              <button onClick={() => send()} style={styles.button}>Enviar</button>
+
+              <button onClick={() => send()} style={styles.button}>
+                Enviar
+              </button>
             </div>
           </section>
 
           <aside className="diana-right-panel">
             <div style={{ ...styles.card, marginBottom: "18px" }}>
               <h3 style={styles.cyan}>🔍 Buscador de manuales</h3>
-              <input value={manualSearch} onChange={(e) => setManualSearch(e.target.value)} placeholder="Buscar VPN, IAM, Teradata..." style={{ width: "100%", padding: "12px", borderRadius: "14px", background: "#0b2747", color: "white", border: `1px solid ${currentTheme.accent}`, marginBottom: "12px", boxSizing: "border-box" }} />
+              <input
+                value={manualSearch}
+                onChange={(e) => setManualSearch(e.target.value)}
+                placeholder="Buscar VPN, IAM, Teradata..."
+                style={{ width: "100%", padding: "12px", marginBottom: "12px", boxSizing: "border-box", ...styles.input }}
+              />
+
               {manualesFiltrados.map((manual) => (
-                <button key={manual.nombre} onClick={() => window.open(manual.link, "_blank", "noopener,noreferrer")} style={{ ...styles.ghostButton, marginBottom: "8px", width: "100%" }}>
-                  <strong>{manual.nombre}</strong><br />
+                <button
+                  key={manual.nombre}
+                  onClick={() => window.open(manual.link, "_blank", "noopener,noreferrer")}
+                  style={{ ...styles.ghostButton, marginBottom: "8px", width: "100%" }}
+                >
+                  <strong>{manual.nombre}</strong>
+                  <br />
                   <span style={{ fontSize: "12px", color: "#94a3b8" }}>{manual.descripcion}</span>
                 </button>
               ))}
@@ -1195,47 +1325,98 @@ const pulseAvatar = {
               <h3 style={styles.cyan}>⚡ Acciones rápidas</h3>
               <div style={{ display: "grid", gap: "10px" }}>
                 {quickActions.map((action) => (
-                  <button key={action} onClick={() => send(action)} style={styles.ghostButton}>{action}</button>
+                  <button key={action} onClick={() => send(action)} style={styles.ghostButton}>
+                    {action}
+                  </button>
                 ))}
-                <button onClick={() => abrirGuiaVisual("teradata")} style={styles.ghostButton}>🖼️ Ver guía visual Teradata</button>
-                <button onClick={() => abrirGuiaVisual("vpn")} style={styles.ghostButton}>🖼️ Ver guía visual VPN</button>
-                <button onClick={() => abrirGuiaVisual("iam")} style={styles.ghostButton}>🖼️ Ver guía visual IAM</button>
-                <button onClick={() => openLink("vpn")} style={styles.ghostButton}>📘 Abrir guía VPN</button>
-                <button onClick={() => openLink("teradata")} style={styles.ghostButton}>📘 Abrir manual Teradata</button>
-                <button onClick={() => openLink("dml")} style={styles.ghostButton}>📄 Abrir formato DML</button>
+
+                <button onClick={() => abrirGuiaVisual("teradata")} style={styles.ghostButton}>
+                  🖼️ Ver guía visual Teradata
+                </button>
+                <button onClick={() => abrirGuiaVisual("vpn")} style={styles.ghostButton}>
+                  🖼️ Ver guía visual VPN
+                </button>
+                <button onClick={() => abrirGuiaVisual("iam")} style={styles.ghostButton}>
+                  🖼️ Ver guía visual IAM
+                </button>
+                <button onClick={() => openLink("vpn")} style={styles.ghostButton}>
+                  📘 Abrir guía VPN
+                </button>
+                <button onClick={() => openLink("teradata")} style={styles.ghostButton}>
+                  📘 Abrir manual Teradata
+                </button>
+                <button onClick={() => openLink("dml")} style={styles.ghostButton}>
+                  📄 Abrir formato DML
+                </button>
               </div>
             </div>
 
             <div style={{ ...styles.card, marginBottom: "18px" }}>
               <h3 style={styles.cyan}>📌 Generadores</h3>
               {["Correo VoBo", "Comentario Helix", "Historia Jira", "Formato DML", "Plantilla IAM"].map((g) => (
-                <button key={g} onClick={() => send(g)} style={{ ...styles.ghostButton, marginBottom: "8px", width: "100%" }}>{g}</button>
+                <button
+                  key={g}
+                  onClick={() => send(g)}
+                  style={{ ...styles.ghostButton, marginBottom: "8px", width: "100%" }}
+                >
+                  {g}
+                </button>
               ))}
             </div>
 
             <div style={{ ...styles.card, marginBottom: "18px" }}>
               <h3 style={styles.cyan}>📂 Archivos adjuntos</h3>
-              {pdfText && <div style={{ marginTop: "12px", padding: "12px", borderRadius: "14px", background: "#061428", border: `1px solid ${currentTheme.accent}`, whiteSpace: "pre-wrap" }}>{pdfText}</div>}
+
+              {pdfText && (
+                <div
+                  style={{
+                    marginTop: "12px",
+                    padding: "12px",
+                    borderRadius: "14px",
+                    background: "#061428",
+                    border: `1px solid ${currentTheme.accent}`,
+                    whiteSpace: "pre-wrap",
+                    color: "white"
+                  }}
+                >
+                  {pdfText}
+                </div>
+              )}
+
               {imageAnalysis && (
-  <div
-    style={{
-      marginTop: "12px",
-      padding: "12px",
-      borderRadius: "14px",
-      background: "#061428",
-      border: `1px solid ${currentTheme.accent}`,
-      whiteSpace: "pre-wrap"
-    }}
-  >
-    {imageAnalysis}
-  </div>
-)}
+                <div
+                  style={{
+                    marginTop: "12px",
+                    padding: "12px",
+                    borderRadius: "14px",
+                    background: "#061428",
+                    border: `1px solid ${currentTheme.accent}`,
+                    whiteSpace: "pre-wrap",
+                    color: "white"
+                  }}
+                >
+                  {imageAnalysis}
+                </div>
+              )}
+
               {uploadedFiles.length === 0 ? (
                 <p style={{ color: "#94a3b8" }}>No hay archivos cargados.</p>
               ) : (
                 uploadedFiles.map((file, index) => (
-                  <a key={index} href={file.url} target="_blank" rel="noopener noreferrer" style={{ ...styles.ghostButton, display: "block", marginBottom: "8px", textDecoration: "none" }}>
-                    <strong>{file.nombre}</strong><br />
+                  <a
+                    key={index}
+                    href={file.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      ...styles.ghostButton,
+                      display: "block",
+                      marginBottom: "8px",
+                      textDecoration: "none"
+                    }}
+                  >
+                    <strong>{file.nombre}</strong>
+                    <br />
                     <span style={{ fontSize: "12px", color: "#94a3b8" }}>{file.tamaño}</span>
                   </a>
                 ))
@@ -1244,21 +1425,45 @@ const pulseAvatar = {
 
             <div style={styles.card}>
               <h3 style={styles.cyan}>📊 Estado de servicios</h3>
+
               {Object.entries(serviceStatus).map(([servicio, estado]) => {
                 const color = estado === "operativo" ? "#22c55e" : estado === "degradado" ? "#facc15" : "#ef4444";
                 const icono = estado === "operativo" ? "🟢" : estado === "degradado" ? "🟡" : "🔴";
 
                 return (
-                  <div key={servicio} style={{ display: "flex", justifyContent: "space-between", padding: "10px", marginBottom: "8px", borderRadius: "12px", background: "#0b2747", border: `1px solid ${color}` }}>
+                  <div
+                    key={servicio}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      padding: "10px",
+                      marginBottom: "8px",
+                      borderRadius: "12px",
+                      background: "#0b2747",
+                      border: `1px solid ${color}`,
+                      color: "white"
+                    }}
+                  >
                     <span style={{ textTransform: "uppercase" }}>{servicio}</span>
-                    <span style={{ color }}>{icono} {estado}</span>
+                    <span style={{ color }}>
+                      {icono} {estado}
+                    </span>
                   </div>
                 );
               })}
 
               {lastAction && (
-                <div style={{ marginTop: "14px", padding: "12px", borderRadius: "14px", background: "rgba(56,189,248,.08)", border: `1px solid ${currentTheme.accent}` }}>
-                  <strong style={styles.cyan}>Última acción:</strong><br />
+                <div
+                  style={{
+                    marginTop: "14px",
+                    padding: "12px",
+                    borderRadius: "14px",
+                    background: "rgba(56,189,248,.08)",
+                    border: `1px solid ${currentTheme.accent}`
+                  }}
+                >
+                  <strong style={styles.cyan}>Última acción:</strong>
+                  <br />
                   {lastAction}
                 </div>
               )}
