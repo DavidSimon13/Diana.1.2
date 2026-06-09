@@ -274,7 +274,22 @@ Quedo atento a tu amable Vo.Bo.
 
 Saludos.`;
   }
+  
+function esSolicitudCorreosAmbos(texto) {
+  const t = normalizar(texto);
 
+  return (
+    t.includes("genera el de ambos") ||
+    t.includes("generame el de ambos") ||
+    t.includes("genérame el de ambos") ||
+    t.includes("correo de ambos") ||
+    t.includes("correos de ambos") ||
+    t.includes("ambos vobo") ||
+    t.includes("ambos vo.bo") ||
+    t.includes("quiero el de ambos")
+  );
+}
+  
   function responder(txt) {
     const t = normalizar(txt);
     const intent = detectarIntencion(txt);
@@ -489,45 +504,59 @@ Escríbeme qué necesitas y te guío paso a paso.`;
   }
 
   function send(text = message) {
-    if (!text.trim()) return;
+  if (!text.trim()) return;
 
-    const userText = text;
-    const intent = detectarIntencion(userText);
+  const userText = text;
+  const intent = detectarIntencion(userText);
 
-    setMessages((prev) => [...prev, { role: "user", text: userText }]);
-    setMessage("");
-    setVisualQuestion("");
+  setMessages((prev) => [...prev, { role: "user", text: userText }]);
+  setMessage("");
+  setVisualQuestion("");
 
-    if (
-      guideActive &&
-      !normalizar(userText).includes("genera el de ambos") &&
-      !normalizar(userText).includes("correo de ambos")
-    ) {
-      setTimeout(() => {
-        nextGuideStep(userText);
-      }, 400);
-      return;
-    }
-
-    const respuestaDiana = responder(userText);
-
-    setLastAction(intent);
+  if (esSolicitudCorreosAmbos(userText)) {
     setIsTyping(true);
 
-    setChatHistory((prev) => [
-      {
-        titulo: userText.length > 28 ? userText.slice(0, 28) + "..." : userText,
-        proceso: intent,
-        fecha: new Date().toLocaleTimeString()
-      },
-      ...prev
-    ]);
-
     setTimeout(() => {
-      setMessages((prev) => [...prev, { role: "diana", text: respuestaDiana }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "diana",
+          text: generarCorreosVoBoAmbos()
+        }
+      ]);
+
       setIsTyping(false);
     }, 700);
+
+    return;
   }
+
+  if (guideActive) {
+    setTimeout(() => {
+      nextGuideStep(userText);
+    }, 400);
+    return;
+  }
+
+  const respuestaDiana = responder(userText);
+
+  setLastAction(intent);
+  setIsTyping(true);
+
+  setChatHistory((prev) => [
+    {
+      titulo: userText.length > 28 ? userText.slice(0, 28) + "..." : userText,
+      proceso: intent,
+      fecha: new Date().toLocaleTimeString()
+    },
+    ...prev
+  ]);
+
+  setTimeout(() => {
+    setMessages((prev) => [...prev, { role: "diana", text: respuestaDiana }]);
+    setIsTyping(false);
+  }, 700);
+}
 
   function getGuideSteps(type = guideType) {
     if (type === "teradata") {
@@ -831,33 +860,31 @@ Puedo ayudarte a:
   ];
 
   const manuales = [
-    {
-      nombre: "Manual VPN",
-      tipo: "vpn",
-      descripcion: "Guía para alta VPN, errores Cisco y soporte.",
-      link:
-        "https://docs.google.com/presentation/d/1gOInm65Oesu6MtUaAefto_uc2FJsB4H8GF6vZxt_xi4/edit?slide=id.g3356b0b5634_127_70#slide=id.g3356b0b5634_127_70"
-    },
-    {
-      nombre: "Manual Teradata",
-      tipo: "teradata",
-      descripcion: "Proceso de reasignación, VoBo, Jira y Helix.",
-      link: "https://docs.google.com"
-    },
-    {
-      nombre: "Manual IAM",
-      tipo: "iam",
-      descripcion: "Plantillas, clonado, accesos y evidencias.",
-      link: "https://docs.google.com"
-    },
-    {
-      nombre: "Formato DML",
-      tipo: "dml",
-      descripcion: "Formato para privilegios y roles.",
-      link: "https://docs.google.com"
-    }
-  ];
-
+  {
+    nombre: "Manual VPN",
+    tipo: "vpn",
+    descripcion: "Guía para alta VPN, errores Cisco y soporte.",
+    link: "/Guía de Acceso a Citrix DaaS.pdf"
+  },
+  {
+    nombre: "Manual Teradata",
+    tipo: "teradata",
+    descripcion: "Proceso de reasignación, VoBo, Jira y Helix.",
+    link: "/Manual Alta usuario Teradata.pptx.pdf"
+  },
+  {
+    nombre: "Manual IAM",
+    tipo: "iam",
+    descripcion: "Plantillas, clonado, accesos y evidencias.",
+    link: "/Informatica_ETL.pptx.pdf"
+  },
+  {
+    nombre: "Formato DML",
+    tipo: "dml",
+    descripcion: "Formato para privilegios y roles.",
+    link: "/Vo.Bo.pdf"
+  }
+];
   const manualesFiltrados = manuales.filter((m) =>
     `${m.nombre} ${m.tipo} ${m.descripcion}`.toLowerCase().includes(manualSearch.toLowerCase())
   );
