@@ -859,30 +859,112 @@ Puedo ayudarte a:
     "Necesito clonar plantilla IAM"
   ];
 
-  const manuales = [
-  {
+  const knowledgeBase = {
+  conectividad: [
+    {
+      nombre: "Acceso Citrix DaaS",
+      archivo: "/citrix-acceso.pdf"
+    }
+  ],
+
+  teradata: [
+    {
+      nombre: "Alta Usuario",
+      archivo: "/teradata-alta-usuario.pdf"
+    },
+    {
+      nombre: "Vo.Bo.",
+      archivo: "/teradata-vobo.pdf"
+    }
+  ],
+
+  jira: [
+    {
+      nombre: "Solicitudes Jira",
+      archivo: "/jira-solicitudes.pdf"
+    },
+    {
+      nombre: "Analysis Framework",
+      archivo: "/jira-analysis-framework.pdf"
+    }
+  ],
+
+  helix: [
+    {
+      nombre: "Peticiones Helix",
+      archivo: "/helix-peticiones.pdf"
+    }
+  ],
+
+  iam: [
+    {
+      nombre: "Plantillas IAM",
+      archivo: "/iam-plantillas.pdf"
+    }
+  ],
+
+  impedimentos: [
+    {
+      nombre: "Modelo Atención E2E",
+      archivo: "/impedimentos-modelo-atencion.pdf"
+    }
+  ]
+};
+
+ const manuales = [
+   {
     nombre: "Manual VPN",
     tipo: "vpn",
     descripcion: "Guía para alta VPN, errores Cisco y soporte.",
     link: "/Guía de Acceso a Citrix DaaS.pdf"
   },
+   
   {
-    nombre: "Manual Teradata",
-    tipo: "teradata",
-    descripcion: "Proceso de reasignación, VoBo, Jira y Helix.",
-    link: "/Manual Alta usuario Teradata.pptx.pdf"
+    categoria: "Teradata",
+    nombre: "Alta Usuario",
+    link: "/teradata-alta-usuario.pdf"
   },
+
   {
-    nombre: "Manual IAM",
-    tipo: "iam",
-    descripcion: "Plantillas, clonado, accesos y evidencias.",
-    link: "/Informatica_ETL.pptx.pdf"
+    categoria: "Teradata",
+    nombre: "Vo.Bo.",
+    link: "/teradata-vobo.pdf"
   },
+
   {
-    nombre: "Formato DML",
-    tipo: "dml",
-    descripcion: "Formato para privilegios y roles.",
-    link: "/Vo.Bo.pdf"
+    categoria: "Jira",
+    nombre: "Solicitudes",
+    link: "/jira-solicitudes.pdf"
+  },
+
+  {
+    categoria: "Jira",
+    nombre: "Analysis Framework",
+    link: "/jira-analysis-framework.pdf"
+  },
+
+  {
+    categoria: "Helix",
+    nombre: "Peticiones",
+    link: "/helix-peticiones.pdf"
+  },
+
+  {
+    categoria: "Citrix",
+    nombre: "Acceso DaaS",
+    link: "/citrix-acceso.pdf"
+  },
+
+  {
+    categoria: "IAM",
+    nombre: "Plantillas",
+    link: "/iam-plantillas.pdf"
+  },
+
+  {
+    categoria: "Impedimentos",
+    nombre: "Modelo Atención E2E",
+    link: "/impedimentos-modelo-atencion.pdf"
   }
 ];
   const manualesFiltrados = manuales.filter((m) =>
