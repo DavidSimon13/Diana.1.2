@@ -912,64 +912,60 @@ Puedo ayudarte a:
 };
 
  const manuales = [
-   {
-    nombre: "Manual VPN",
-    tipo: "vpn",
-    descripcion: "Guía para alta VPN, errores Cisco y soporte.",
-    link: "/Guía de Acceso a Citrix DaaS.pdf"
+  {
+    categoria: "Conectividad",
+    nombre: "Acceso Citrix DaaS",
+    descripcion: "Guía de acceso Citrix DaaS.",
+    link: "/citrix-acceso.pdf"
   },
-   
   {
     categoria: "Teradata",
     nombre: "Alta Usuario",
+    descripcion: "Alta y reasignación de usuarios Teradata.",
     link: "/teradata-alta-usuario.pdf"
   },
-
   {
     categoria: "Teradata",
     nombre: "Vo.Bo.",
+    descripcion: "Formato y ejemplo de Vo.Bo.",
     link: "/teradata-vobo.pdf"
   },
-
   {
     categoria: "Jira",
     nombre: "Solicitudes",
+    descripcion: "Manual de solicitudes Jira.",
     link: "/jira-solicitudes.pdf"
   },
-
   {
     categoria: "Jira",
     nombre: "Analysis Framework",
+    descripcion: "Alta de tarea de análisis en Jira.",
     link: "/jira-analysis-framework.pdf"
   },
-
   {
     categoria: "Helix",
     nombre: "Peticiones",
+    descripcion: "Manual de peticiones Helix.",
     link: "/helix-peticiones.pdf"
   },
-
-  {
-    categoria: "Citrix",
-    nombre: "Acceso DaaS",
-    link: "/citrix-acceso.pdf"
-  },
-
   {
     categoria: "IAM",
     nombre: "Plantillas",
+    descripcion: "Plantillas y servicios IAM.",
     link: "/iam-plantillas.pdf"
   },
-
   {
     categoria: "Impedimentos",
     nombre: "Modelo Atención E2E",
-    link: "/impedimentos-modelo-atencion.pdf"
+    descripcion: "Modelo de atención de impedimentos.",
+    link: "/impedimentos-modelo-atencion_jira.pdf"
   }
 ];
   const manualesFiltrados = manuales.filter((m) =>
-    `${m.nombre} ${m.tipo} ${m.descripcion}`.toLowerCase().includes(manualSearch.toLowerCase())
-  );
+  `${m.categoria} ${m.nombre} ${m.descripcion}`
+    .toLowerCase()
+    .includes(manualSearch.toLowerCase())
+);
 
   const pulseAvatar = {
     animation: "pulseDiana 2.4s infinite ease-in-out"
