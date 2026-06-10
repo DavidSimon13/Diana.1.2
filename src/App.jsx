@@ -904,7 +904,7 @@ Puedo ayudarte a:
     ],
     helix: [{ nombre: "Peticiones Helix", archivo: "/helix-peticiones.pdf" }],
     iam: [{ nombre: "Plantillas IAM", archivo: "/iam-plantillas.pdf" }],
-    impedimentos: [{ nombre: "Modelo Atención E2E", archivo: "/impedimentos-modelo-atencion.pdf" }]
+    impedimentos: [{ nombre: "Modelo Atención E2E", archivo: "/impedimentos-modelo-atencion-jira.pdf" }]
   };
 
   const manuales = [
@@ -954,7 +954,7 @@ Puedo ayudarte a:
       categoria: "Impedimentos",
       nombre: "Modelo Atención E2E",
       descripcion: "Modelo de atención de impedimentos.",
-      link: "/impedimentos-modelo-atencion.pdf"
+      link: "/impedimentos-modelo-atencion-jira.pdf"
     }
   ];
 
