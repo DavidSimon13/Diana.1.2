@@ -120,7 +120,13 @@ export default function App() {
     if (t.includes("vpn") || t.includes("cisco") || t.includes("certificate")) return "vpn";
     if (t.includes("citrix") || t.includes("bloqueo")) return "citrix";
     if (t.includes("iam") || t.includes("plantilla")) return "iam";
-    if (t.includes("dml") || t.includes("formato") || t.includes("privilegios") || t.includes("role")) return "dml";
+    if (
+      t.includes("dml") ||
+      t.includes("formato") ||
+      t.includes("privilegios") ||
+      t.includes("role")
+    )
+      return "dml";
     if (t.includes("jira") || t.includes("ticket")) return "jira";
     if (t.includes("comentario") && t.includes("helix")) return "helix";
     if (t.includes("escalamiento") || t.includes("escalar")) return "escalamiento";
@@ -137,6 +143,7 @@ export default function App() {
     }
 
     if (t.includes("hola") || t.includes("buen dia") || t.includes("buenas")) return "saludo";
+
     return "general";
   }
 
@@ -274,22 +281,22 @@ Quedo atento a tu amable Vo.Bo.
 
 Saludos.`;
   }
-  
-function esSolicitudCorreosAmbos(texto) {
-  const t = normalizar(texto);
 
-  return (
-    t.includes("genera el de ambos") ||
-    t.includes("generame el de ambos") ||
-    t.includes("genérame el de ambos") ||
-    t.includes("correo de ambos") ||
-    t.includes("correos de ambos") ||
-    t.includes("ambos vobo") ||
-    t.includes("ambos vo.bo") ||
-    t.includes("quiero el de ambos")
-  );
-}
-  
+  function esSolicitudCorreosAmbos(texto) {
+    const t = normalizar(texto);
+
+    return (
+      t.includes("genera el de ambos") ||
+      t.includes("generame el de ambos") ||
+      t.includes("genérame el de ambos") ||
+      t.includes("correo de ambos") ||
+      t.includes("correos de ambos") ||
+      t.includes("ambos vobo") ||
+      t.includes("ambos vo.bo") ||
+      t.includes("quiero el de ambos")
+    );
+  }
+
   function responder(txt) {
     const t = normalizar(txt);
     const intent = detectarIntencion(txt);
@@ -349,14 +356,7 @@ Como ya tienes el Vo.Bo., el siguiente paso es:
 ¿Quieres que te genere el comentario Helix o el ticket Jira?`;
     }
 
-    if (
-      t.includes("genera el de ambos") ||
-      t.includes("generame el de ambos") ||
-      t.includes("genérame el de ambos") ||
-      t.includes("correo de ambos") ||
-      t.includes("ambos vobo") ||
-      t.includes("ambos vo.bo")
-    ) {
+    if (esSolicitudCorreosAmbos(txt)) {
       return generarCorreosVoBoAmbos();
     }
 
@@ -436,6 +436,8 @@ Para obtener licencia se debe realizar una reasignación con:
     if (intent === "vpn") {
       return `🔐 Soporte VPN
 
+VPN es solo conectividad para poder entrar a red interna y después acceder a herramientas como Helix, Jira, Teradata o Citrix.
+
 1. Cierra VPN.
 2. Reinicia el equipo.
 3. Abre Cisco nuevamente.
@@ -492,7 +494,7 @@ Mail: usuario@bbva.com`;
     return `🤖 Puedo ayudarte con:
 
 ✅ Teradata
-✅ VPN
+✅ Conectividad / VPN
 ✅ Citrix
 ✅ IAM
 ✅ Jira / Helix
@@ -504,59 +506,58 @@ Escríbeme qué necesitas y te guío paso a paso.`;
   }
 
   function send(text = message) {
-  if (!text.trim()) return;
+    if (!text.trim()) return;
 
-  const userText = text;
-  const intent = detectarIntencion(userText);
+    const userText = text;
+    const intent = detectarIntencion(userText);
 
-  setMessages((prev) => [...prev, { role: "user", text: userText }]);
-  setMessage("");
-  setVisualQuestion("");
+    setMessages((prev) => [...prev, { role: "user", text: userText }]);
+    setMessage("");
+    setVisualQuestion("");
 
-  if (esSolicitudCorreosAmbos(userText)) {
+    if (esSolicitudCorreosAmbos(userText)) {
+      setIsTyping(true);
+
+      setTimeout(() => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "diana",
+            text: generarCorreosVoBoAmbos()
+          }
+        ]);
+        setIsTyping(false);
+      }, 700);
+
+      return;
+    }
+
+    if (guideActive) {
+      setTimeout(() => {
+        nextGuideStep(userText);
+      }, 400);
+      return;
+    }
+
+    const respuestaDiana = responder(userText);
+
+    setLastAction(intent);
     setIsTyping(true);
 
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "diana",
-          text: generarCorreosVoBoAmbos()
-        }
-      ]);
+    setChatHistory((prev) => [
+      {
+        titulo: userText.length > 28 ? userText.slice(0, 28) + "..." : userText,
+        proceso: intent,
+        fecha: new Date().toLocaleTimeString()
+      },
+      ...prev
+    ]);
 
+    setTimeout(() => {
+      setMessages((prev) => [...prev, { role: "diana", text: respuestaDiana }]);
       setIsTyping(false);
     }, 700);
-
-    return;
   }
-
-  if (guideActive) {
-    setTimeout(() => {
-      nextGuideStep(userText);
-    }, 400);
-    return;
-  }
-
-  const respuestaDiana = responder(userText);
-
-  setLastAction(intent);
-  setIsTyping(true);
-
-  setChatHistory((prev) => [
-    {
-      titulo: userText.length > 28 ? userText.slice(0, 28) + "..." : userText,
-      proceso: intent,
-      fecha: new Date().toLocaleTimeString()
-    },
-    ...prev
-  ]);
-
-  setTimeout(() => {
-    setMessages((prev) => [...prev, { role: "diana", text: respuestaDiana }]);
-    setIsTyping(false);
-  }, 700);
-}
 
   function getGuideSteps(type = guideType) {
     if (type === "teradata") {
@@ -571,10 +572,10 @@ Escríbeme qué necesitas y te guío paso a paso.`;
 
     if (type === "vpn") {
       return [
-        "🔐 Guía VPN - Paso 1\n\nCierra VPN completamente.",
-        "🔐 Guía VPN - Paso 2\n\nReinicia el equipo y abre Cisco nuevamente.",
-        "🔐 Guía VPN - Paso 3\n\nIntenta conectarte.",
-        "🔐 Guía VPN - Paso 4\n\nSi persiste, contacta soporte VPN."
+        "🔐 Guía Conectividad / VPN - Paso 1\n\nVPN es solo para conectarte a red interna.",
+        "🔐 Guía Conectividad / VPN - Paso 2\n\nReinicia equipo y abre Cisco nuevamente.",
+        "🔐 Guía Conectividad / VPN - Paso 3\n\nYa conectado, valida acceso a Helix, Jira, Teradata o Citrix.",
+        "🔐 Guía Conectividad / VPN - Paso 4\n\nSi persiste, contacta soporte VPN."
       ];
     }
 
@@ -646,11 +647,15 @@ Escríbeme qué necesitas y te guío paso a paso.`;
 
   function openLink(type) {
     const links = {
-      vpn:
-        "https://docs.google.com/presentation/d/1gOInm65Oesu6MtUaAefto_uc2FJsB4H8GF6vZxt_xi4/edit?slide=id.g3356b0b5634_127_70#slide=id.g3356b0b5634_127_70",
-      teradata: "https://docs.google.com",
-      iam: "https://docs.google.com",
-      dml: "https://docs.google.com"
+      vpn: "/citrix-acceso.pdf",
+      citrix: "/citrix-acceso.pdf",
+      teradata: "/teradata-alta-usuario.pdf",
+      vobo: "/teradata-vobo.pdf",
+      iam: "/iam-plantillas.pdf",
+      dml: "/teradata-vobo.pdf",
+      jira: "/jira-solicitudes.pdf",
+      helix: "/helix-peticiones.pdf",
+      impedimentos: "/impedimentos-modelo-atencion_jira.pdf"
     };
 
     window.open(links[type], "_blank", "noopener,noreferrer");
@@ -792,55 +797,83 @@ Puedo ayudarte a:
         pasos: [
           {
             texto: "Revisa el inicio del manual de alta Teradata.",
-            pdf: "/Manual Alta usuario Teradata.pptx.pdf#page=1"
+            pdf: "/teradata-alta-usuario.pdf#page=1"
           },
           {
             texto: "Ubica el proceso de solicitud o reasignación.",
-            pdf: "/Manual Alta usuario Teradata.pptx.pdf#page=2"
+            pdf: "/teradata-alta-usuario.pdf#page=2"
           },
           {
             texto: "Valida los datos requeridos del usuario.",
-            pdf: "/Manual Alta usuario Teradata.pptx.pdf#page=3"
+            pdf: "/teradata-alta-usuario.pdf#page=3"
           },
           {
             texto: "Adjunta Vo.Bo. y continúa con Helix/Jira.",
-            pdf: "/Manual Alta usuario Teradata.pptx.pdf#page=4"
+            pdf: "/teradata-vobo.pdf#page=1"
           }
         ]
       },
       vpn: {
-        titulo: "Guía visual VPN / Citrix",
-        descripcion: "Diana te muestra el manual relacionado con acceso remoto.",
+        titulo: "Conectividad / Citrix",
+        descripcion: "VPN es conectividad. Citrix permite acceso a entornos internos.",
         pasos: [
           {
-            texto: "Revisa la guía de acceso Citrix.",
-            pdf: "/Guía de Acceso a Citrix DaaS.pdf#page=1"
+            texto: "Revisa la guía de acceso Citrix DaaS.",
+            pdf: "/citrix-acceso.pdf#page=1"
           },
           {
             texto: "Sigue los pasos de conexión.",
-            pdf: "/Guía de Acceso a Citrix DaaS.pdf#page=2"
+            pdf: "/citrix-acceso.pdf#page=2"
           },
           {
             texto: "Valida errores comunes.",
-            pdf: "/Guía de Acceso a Citrix DaaS.pdf#page=3"
+            pdf: "/citrix-acceso.pdf#page=3"
           }
         ]
       },
       iam: {
-        titulo: "Guía visual IAM / Jira / Helix",
-        descripcion: "Diana te guía usando los manuales de Jira y Helix.",
+        titulo: "Guía visual IAM",
+        descripcion: "Diana te guía usando el manual de plantillas IAM.",
         pasos: [
           {
-            texto: "Revisa el manual de solicitudes Innovation MX Jira.",
-            pdf: "/Manual Solicitudes_Innovation_MX_JIRA.pdf#page=1"
+            texto: "Revisa las plantillas IAM.",
+            pdf: "/iam-plantillas.pdf#page=1"
           },
           {
-            texto: "Revisa el manual de peticiones Helix - Jira Soporte MX.",
-            pdf: "/Manual de Peticiones Helix - Jira Soporte MX.pdf#page=1"
+            texto: "Ubica la plantilla correcta.",
+            pdf: "/iam-plantillas.pdf#page=2"
           },
           {
-            texto: "Valida la evidencia y comentarios necesarios.",
-            pdf: "/Vo.Bo.pdf#page=1"
+            texto: "Clona, edita y adjunta evidencia.",
+            pdf: "/iam-plantillas.pdf#page=3"
+          }
+        ]
+      },
+      jira: {
+        titulo: "Guía visual Jira",
+        descripcion: "Diana te guía usando el manual de solicitudes Jira.",
+        pasos: [
+          {
+            texto: "Revisa cómo levantar una solicitud Jira.",
+            pdf: "/jira-solicitudes.pdf#page=1"
+          },
+          {
+            texto: "Valida campos obligatorios.",
+            pdf: "/jira-solicitudes.pdf#page=2"
+          }
+        ]
+      },
+      helix: {
+        titulo: "Guía visual Helix",
+        descripcion: "Diana te guía usando el manual de peticiones Helix.",
+        pasos: [
+          {
+            texto: "Revisa cómo levantar una petición Helix.",
+            pdf: "/helix-peticiones.pdf#page=1"
+          },
+          {
+            texto: "Agrega comentarios y evidencia.",
+            pdf: "/helix-peticiones.pdf#page=2"
           }
         ]
       }
@@ -860,112 +893,76 @@ Puedo ayudarte a:
   ];
 
   const knowledgeBase = {
-  conectividad: [
+    conectividad: [{ nombre: "Acceso Citrix DaaS", archivo: "/citrix-acceso.pdf" }],
+    teradata: [
+      { nombre: "Alta Usuario", archivo: "/teradata-alta-usuario.pdf" },
+      { nombre: "Vo.Bo.", archivo: "/teradata-vobo.pdf" }
+    ],
+    jira: [
+      { nombre: "Solicitudes Jira", archivo: "/jira-solicitudes.pdf" },
+      { nombre: "Analysis Framework", archivo: "/jira-analysis-framework.pdf" }
+    ],
+    helix: [{ nombre: "Peticiones Helix", archivo: "/helix-peticiones.pdf" }],
+    iam: [{ nombre: "Plantillas IAM", archivo: "/iam-plantillas.pdf" }],
+    impedimentos: [{ nombre: "Modelo Atención E2E", archivo: "/impedimentos-modelo-atencion.pdf" }]
+  };
+
+  const manuales = [
     {
+      categoria: "Conectividad",
       nombre: "Acceso Citrix DaaS",
-      archivo: "/citrix-acceso.pdf"
-    }
-  ],
-
-  teradata: [
+      descripcion: "Guía de acceso Citrix DaaS.",
+      link: "/citrix-acceso.pdf"
+    },
     {
+      categoria: "Teradata",
       nombre: "Alta Usuario",
-      archivo: "/teradata-alta-usuario.pdf"
+      descripcion: "Alta y reasignación de usuarios Teradata.",
+      link: "/teradata-alta-usuario.pdf"
     },
     {
+      categoria: "Teradata",
       nombre: "Vo.Bo.",
-      archivo: "/teradata-vobo.pdf"
-    }
-  ],
-
-  jira: [
-    {
-      nombre: "Solicitudes Jira",
-      archivo: "/jira-solicitudes.pdf"
+      descripcion: "Formato y ejemplo de Vo.Bo.",
+      link: "/teradata-vobo.pdf"
     },
     {
+      categoria: "Jira",
+      nombre: "Solicitudes",
+      descripcion: "Manual de solicitudes Jira.",
+      link: "/jira-solicitudes.pdf"
+    },
+    {
+      categoria: "Jira",
       nombre: "Analysis Framework",
-      archivo: "/jira-analysis-framework.pdf"
-    }
-  ],
-
-  helix: [
+      descripcion: "Alta de tarea de análisis en Jira.",
+      link: "/jira-analysis-framework.pdf"
+    },
     {
-      nombre: "Peticiones Helix",
-      archivo: "/helix-peticiones.pdf"
-    }
-  ],
-
-  iam: [
+      categoria: "Helix",
+      nombre: "Peticiones",
+      descripcion: "Manual de peticiones Helix.",
+      link: "/helix-peticiones.pdf"
+    },
     {
-      nombre: "Plantillas IAM",
-      archivo: "/iam-plantillas.pdf"
-    }
-  ],
-
-  impedimentos: [
+      categoria: "IAM",
+      nombre: "Plantillas",
+      descripcion: "Plantillas y servicios IAM.",
+      link: "/iam-plantillas.pdf"
+    },
     {
+      categoria: "Impedimentos",
       nombre: "Modelo Atención E2E",
-      archivo: "/impedimentos-modelo-atencion.pdf"
+      descripcion: "Modelo de atención de impedimentos.",
+      link: "/impedimentos-modelo-atencion.pdf"
     }
-  ]
-};
+  ];
 
- const manuales = [
-  {
-    categoria: "Conectividad",
-    nombre: "Acceso Citrix DaaS",
-    descripcion: "Guía de acceso Citrix DaaS.",
-    link: "/citrix-acceso.pdf"
-  },
-  {
-    categoria: "Teradata",
-    nombre: "Alta Usuario",
-    descripcion: "Alta y reasignación de usuarios Teradata.",
-    link: "/teradata-alta-usuario.pdf"
-  },
-  {
-    categoria: "Teradata",
-    nombre: "Vo.Bo.",
-    descripcion: "Formato y ejemplo de Vo.Bo.",
-    link: "/teradata-vobo.pdf"
-  },
-  {
-    categoria: "Jira",
-    nombre: "Solicitudes",
-    descripcion: "Manual de solicitudes Jira.",
-    link: "/jira-solicitudes.pdf"
-  },
-  {
-    categoria: "Jira",
-    nombre: "Analysis Framework",
-    descripcion: "Alta de tarea de análisis en Jira.",
-    link: "/jira-analysis-framework.pdf"
-  },
-  {
-    categoria: "Helix",
-    nombre: "Peticiones",
-    descripcion: "Manual de peticiones Helix.",
-    link: "/helix-peticiones.pdf"
-  },
-  {
-    categoria: "IAM",
-    nombre: "Plantillas",
-    descripcion: "Plantillas y servicios IAM.",
-    link: "/iam-plantillas.pdf"
-  },
-  {
-    categoria: "Impedimentos",
-    nombre: "Modelo Atención E2E",
-    descripcion: "Modelo de atención de impedimentos.",
-    link: "/impedimentos-modelo-atencion_jira.pdf"
-  }
-];
   const manualesFiltrados = manuales.filter((m) =>
-  `${m.categoria} ${m.nombre} ${m.descripcion}`
-    .toLowerCase()
-    .includes(manualSearch.toLowerCase())
-);
+    `${m.categoria} ${m.nombre} ${m.descripcion}`
+      .toLowerCase()
+      .includes(manualSearch.toLowerCase())
+  );
 
   const pulseAvatar = {
     animation: "pulseDiana 2.4s infinite ease-in-out"
