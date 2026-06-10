@@ -655,7 +655,7 @@ Escríbeme qué necesitas y te guío paso a paso.`;
       dml: "/teradata-vobo.pdf",
       jira: "/jira-solicitudes.pdf",
       helix: "/helix-peticiones.pdf",
-      impedimentos: "/impedimentos-modelo-atencion_jira.pdf"
+      impedimentos: "/impedimentos-modelo-atencion-jira.pdf"
     };
 
     window.open(links[type], "_blank", "noopener,noreferrer");
