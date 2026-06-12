@@ -690,9 +690,9 @@ Escríbeme qué necesitas y te guío paso a paso.`;
     vpn: "/citrix-acceso.pdf",
     citrix: "/citrix-acceso.pdf",
     teradata: "/teradata-alta-usuario.pdf",
-    vobo: "/VoBo Teradata.pdf",
+    vobo: "/VoBo-Teradata.pdf",
     iam: "/iam-plantillas.pdf",
-    dml: "/VoBo Teradata.pdf",
+    dml: "/VoBo-Teradata.pdf",
     jira: "/jira-solicitudes.pdf",
     helix: "/helix-peticiones.pdf",
     impedimentos: "/impedimentos-modelo-atencion-jira.pdf"
@@ -849,7 +849,7 @@ Puedo ayudarte a:
           },
           {
             texto: "Adjunta Vo.Bo. y continúa con Helix/Jira.",
-            pdf: "/VoBo Teradata.pdf#page=1"
+            pdf: "/VoBo-Teradata.pdf#page=1"
           }
         ]
       },
@@ -936,7 +936,7 @@ Puedo ayudarte a:
     conectividad: [{ nombre: "Acceso Citrix DaaS", archivo: "/citrix-acceso.pdf" }],
     teradata: [
       { nombre: "Alta Usuario", archivo: "/teradata-alta-usuario.pdf" },
-      { nombre: "Vo.Bo.", archivo: "/VoBo Teradata.pdf" }
+      { nombre: "Vo.Bo.", archivo: "/VoBo-Teradata.pdf" }
     ],
     jira: [
       { nombre: "Solicitudes Jira", archivo: "/jira-solicitudes.pdf" },
@@ -964,7 +964,7 @@ Puedo ayudarte a:
       categoria: "Teradata",
       nombre: "Vo.Bo.",
       descripcion: "Formato y ejemplo de Vo.Bo.",
-      link: "/VoBo Teradata.pdf"
+      link: "/VoBo-Teradata.pdf"
     },
     {
       categoria: "Jira",
