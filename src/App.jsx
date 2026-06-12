@@ -297,6 +297,26 @@ Saludos.`;
     );
   }
 
+
+
+  function tieneVoBoConfirmado(texto) {
+    const t = normalizar(texto);
+
+    return (
+      t.includes("ya tengo el vobo") ||
+      t.includes("ya tengo el vo.bo") ||
+      t.includes("ya tengo ambos") ||
+      t.includes("ya tengo el de ambos") ||
+      t.includes("ya cuento con ambos") ||
+      t.includes("ya los tengo") ||
+      t.includes("tengo ambos vobo") ||
+      t.includes("tengo ambos vo.bo") ||
+      t.includes("tengo el de ambos") ||
+      t.includes("ya tengo los dos") ||
+      t.includes("ya cuento con los dos")
+    );
+  }
+
   function responder(txt) {
     const t = normalizar(txt);
     const intent = detectarIntencion(txt);
@@ -342,7 +362,7 @@ ${imageAnalysis}
 Si me indicas qué proceso estás realizando, puedo guiarte paso a paso.`;
     }
 
-    if (t.includes("ya tengo el vobo") || t.includes("ya tengo el vo.bo")) {
+    if (tieneVoBoConfirmado(txt)) {
       return `Perfecto 👌
 
 Como ya tienes el Vo.Bo., el siguiente paso es:
@@ -532,6 +552,13 @@ Escríbeme qué necesitas y te guío paso a paso.`;
       return;
     }
 
+    if (guideActive && tieneVoBoConfirmado(userText)) {
+      setTimeout(() => {
+        nextGuideStep(userText);
+      }, 400);
+      return;
+    }
+
     if (guideActive) {
       setTimeout(() => {
         nextGuideStep(userText);
@@ -611,6 +638,19 @@ Escríbeme qué necesitas y te guío paso a paso.`;
   }
 
   function nextGuideStep(userAnswer = "") {
+    if (esSolicitudCorreosAmbos(userAnswer)) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "diana",
+          text: generarCorreosVoBoAmbos(),
+          guide: true
+        }
+      ]);
+
+      return;
+    }
+
     const steps = getGuideSteps(guideType);
     const nextStep = guideStep + 1;
 
