@@ -296,8 +296,6 @@ Saludos.`;
     );
   }
 
-
-
   function tieneVoBoConfirmado(texto) {
     const t = normalizar(texto);
 
@@ -685,20 +683,20 @@ Escríbeme qué necesitas y te guío paso a paso.`;
   }
 
   function openLink(type) {
-  const links = {
-    vpn: "/citrix-acceso.pdf",
-    citrix: "/citrix-acceso.pdf",
-    teradata: "/teradata-alta-usuario.pdf",
-    vobo: "/VoBo-Teradata.pdf",
-    iam: "/iam-plantillas.pdf",
-    dml: "/VoBo-Teradata.pdf",
-    jira: "/jira-solicitudes.pdf",
-    helix: "/helix-peticiones.pdf",
-    impedimentos: "/impedimentos-modelo-atencion-jira.pdf"
-  };
+    const links = {
+      vpn: "citrix-acceso.pdf",
+      citrix: "citrix-acceso.pdf",
+      teradata: "teradata-alta-usuario.pdf",
+      vobo: "VoBo-Teradata.pdf",
+      iam: "iam-plantillas.pdf",
+      dml: "VoBo-Teradata.pdf",
+      jira: "jira-solicitudes.pdf",
+      helix: "helix-peticiones.pdf",
+      impedimentos: "impedimentos-modelo-atencion-jira.pdf"
+    };
 
-  window.open(links[type], "_blank", "noopener,noreferrer");
-}
+    window.open(links[type], "_blank", "noopener,noreferrer");
+  }
 
   async function extraerTextoPDF(file) {
     try {
@@ -836,19 +834,19 @@ Puedo ayudarte a:
         pasos: [
           {
             texto: "Revisa el inicio del manual de alta Teradata.",
-            pdf: "/teradata-alta-usuario.pdf#page=1"
+            pdf: "teradata-alta-usuario.pdf#page=1"
           },
           {
             texto: "Ubica el proceso de solicitud o reasignación.",
-            pdf: "/teradata-alta-usuario.pdf#page=2"
+            pdf: "teradata-alta-usuario.pdf#page=2"
           },
           {
             texto: "Valida los datos requeridos del usuario.",
-            pdf: "/teradata-alta-usuario.pdf#page=3"
+            pdf: "teradata-alta-usuario.pdf#page=3"
           },
           {
             texto: "Adjunta Vo.Bo. y continúa con Helix/Jira.",
-            pdf: "/VoBo-Teradata.pdf#page=1"
+            pdf: "VoBo-Teradata.pdf#page=1"
           }
         ]
       },
@@ -858,15 +856,15 @@ Puedo ayudarte a:
         pasos: [
           {
             texto: "Revisa la guía de acceso Citrix DaaS.",
-            pdf: "/citrix-acceso.pdf#page=1"
+            pdf: "citrix-acceso.pdf#page=1"
           },
           {
             texto: "Sigue los pasos de conexión.",
-            pdf: "/citrix-acceso.pdf#page=2"
+            pdf: "citrix-acceso.pdf#page=2"
           },
           {
             texto: "Valida errores comunes.",
-            pdf: "/citrix-acceso.pdf#page=3"
+            pdf: "citrix-acceso.pdf#page=3"
           }
         ]
       },
@@ -876,15 +874,15 @@ Puedo ayudarte a:
         pasos: [
           {
             texto: "Revisa las plantillas IAM.",
-            pdf: "/iam-plantillas.pdf#page=1"
+            pdf: "iam-plantillas.pdf#page=1"
           },
           {
             texto: "Ubica la plantilla correcta.",
-            pdf: "/iam-plantillas.pdf#page=2"
+            pdf: "iam-plantillas.pdf#page=2"
           },
           {
             texto: "Clona, edita y adjunta evidencia.",
-            pdf: "/iam-plantillas.pdf#page=3"
+            pdf: "iam-plantillas.pdf#page=3"
           }
         ]
       },
@@ -894,11 +892,11 @@ Puedo ayudarte a:
         pasos: [
           {
             texto: "Revisa cómo levantar una solicitud Jira.",
-            pdf: "/jira-solicitudes.pdf#page=1"
+            pdf: "jira-solicitudes.pdf#page=1"
           },
           {
             texto: "Valida campos obligatorios.",
-            pdf: "/jira-solicitudes.pdf#page=2"
+            pdf: "jira-solicitudes.pdf#page=2"
           }
         ]
       },
@@ -908,11 +906,11 @@ Puedo ayudarte a:
         pasos: [
           {
             texto: "Revisa cómo levantar una petición Helix.",
-            pdf: "/helix-peticiones.pdf#page=1"
+            pdf: "helix-peticiones.pdf#page=1"
           },
           {
             texto: "Agrega comentarios y evidencia.",
-            pdf: "/helix-peticiones.pdf#page=2"
+            pdf: "helix-peticiones.pdf#page=2"
           }
         ]
       }
@@ -932,70 +930,19 @@ Puedo ayudarte a:
   ];
 
   const knowledgeBase = {
-    conectividad: [{ nombre: "Acceso Citrix DaaS", archivo: "/citrix-acceso.pdf" }],
+    conectividad: [{ nombre: "Acceso Citrix DaaS", archivo: "citrix-acceso.pdf" }],
     teradata: [
-      { nombre: "Alta Usuario", archivo: "/teradata-alta-usuario.pdf" },
-      { nombre: "Vo.Bo.", archivo: "/VoBo-Teradata.pdf" }
+      { nombre: "Alta Usuario", archivo: "teradata-alta-usuario.pdf" },
+      { nombre: "Vo.Bo.", archivo: "VoBo-Teradata.pdf" }
     ],
     jira: [
-      { nombre: "Solicitudes Jira", archivo: "/jira-solicitudes.pdf" },
-      { nombre: "Analysis Framework", archivo: "/jira-analysis-framework.pdf" }
+      { nombre: "Solicitudes Jira", archivo: "jira-solicitudes.pdf" },
+      { nombre: "Analysis Framework", archivo: "jira-analysis-framework.pdf" }
     ],
-    helix: [{ nombre: "Peticiones Helix", archivo: "/helix-peticiones.pdf" }],
-    iam: [{ nombre: "Plantillas IAM", archivo: "/iam-plantillas.pdf" }],
-    impedimentos: [{ nombre: "Modelo Atención E2E", archivo: "/impedimentos-modelo-atencion-jira.pdf" }]
+    helix: [{ nombre: "Peticiones Helix", archivo: "helix-peticiones.pdf" }],
+    iam: [{ nombre: "Plantillas IAM", archivo: "iam-plantillas.pdf" }],
+    impedimentos: [{ nombre: "Modelo Atención E2E", archivo: "impedimentos-modelo-atencion-jira.pdf" }]
   };
-
-  const manuales = [
-    {
-      categoria: "Conectividad",
-      nombre: "Acceso Citrix DaaS",
-      descripcion: "Guía de acceso Citrix DaaS.",
-      link: "/citrix-acceso.pdf"
-    },
-    {
-      categoria: "Teradata",
-      nombre: "Alta Usuario",
-      descripcion: "Alta y reasignación de usuarios Teradata.",
-      link: "/teradata-alta-usuario.pdf"
-    },
-    {
-      categoria: "Teradata",
-      nombre: "Vo.Bo.",
-      descripcion: "Formato y ejemplo de Vo.Bo.",
-      link: "/VoBo-Teradata.pdf"
-    },
-    {
-      categoria: "Jira",
-      nombre: "Solicitudes",
-      descripcion: "Manual de solicitudes Jira.",
-      link: "/jira-solicitudes.pdf"
-    },
-    {
-      categoria: "Jira",
-      nombre: "Analysis Framework",
-      descripcion: "Alta de tarea de análisis en Jira.",
-      link: "/jira-analysis-framework.pdf"
-    },
-    {
-      categoria: "Helix",
-      nombre: "Peticiones",
-      descripcion: "Manual de peticiones Helix.",
-      link: "/helix-peticiones.pdf"
-    },
-    {
-      categoria: "IAM",
-      nombre: "Plantillas",
-      descripcion: "Plantillas y servicios IAM.",
-      link: "/iam-plantillas.pdf"
-    },
-    {
-      categoria: "Impedimentos",
-      nombre: "Modelo Atención E2E",
-      descripcion: "Modelo de atención de impedimentos.",
-      link: "/impedimentos-modelo-atencion-jira.pdf"
-    }
-  ];
 
   const pulseAvatar = {
     animation: "pulseDiana 2.4s infinite ease-in-out"
@@ -1026,563 +973,4 @@ Puedo ayudarte a:
     },
     main: {
       flex: 1,
-      padding: "28px",
-      display: "grid",
-      gridTemplateColumns: "1fr 340px",
-      gap: "24px"
-    },
-    card: {
-      background: currentTheme.card,
-      border: `1px solid ${currentTheme.accent}`,
-      borderRadius: "24px",
-      padding: "22px",
-      boxShadow: `0 0 30px ${currentTheme.accent}33`,
-      color: currentTheme.text
-    },
-    cyan: {
-      color: currentTheme.accent
-    },
-    button: {
-      background: currentTheme.accent,
-      color: "black",
-      border: "none",
-      borderRadius: "16px",
-      padding: "14px 22px",
-      fontWeight: "800",
-      cursor: "pointer"
-    },
-    ghostButton: {
-      background: "#0b2747",
-      color: "white",
-      border: `1px solid ${currentTheme.accent}`,
-      borderRadius: "16px",
-      padding: "12px 16px",
-      cursor: "pointer"
-    },
-    input: {
-      background: "#0b2747",
-      color: "white",
-      border: `1px solid ${currentTheme.accent}`,
-      borderRadius: "14px",
-      outline: "none"
-    }
-  };
-
-  return (
-    <>
-      <style>
-        {`
-          @keyframes pulseDiana {
-            0% { transform: scale(1); filter: drop-shadow(0 0 10px ${currentTheme.glow}); }
-            50% { transform: scale(1.04); filter: drop-shadow(0 0 28px ${currentTheme.glow}); }
-            100% { transform: scale(1); filter: drop-shadow(0 0 10px ${currentTheme.glow}); }
-          }
-
-          @media (max-width: 900px) {
-            .diana-layout { flex-direction: column !important; }
-            .diana-sidebar { width: auto !important; }
-            .diana-main { display: block !important; padding: 14px !important; }
-            .diana-right-panel { margin-top: 18px !important; }
-            .diana-hero { flex-direction: column !important; text-align: center !important; }
-          }
-        `}
-      </style>
-
-      <button
-        onClick={() => setShowSettings(!showSettings)}
-        style={{
-          position: "fixed",
-          top: "20px",
-          right: "20px",
-          zIndex: 999,
-          width: "52px",
-          height: "52px",
-          borderRadius: "14px",
-          border: `1px solid ${currentTheme.accent}`,
-          background: "#061428",
-          color: currentTheme.accent,
-          fontSize: "22px",
-          cursor: "pointer"
-        }}
-      >
-        ⚙️
-      </button>
-
-      {showSettings && (
-        <div
-          style={{
-            position: "fixed",
-            top: "84px",
-            right: "20px",
-            width: "380px",
-            zIndex: 998,
-            ...styles.card
-          }}
-        >
-          <h3 style={styles.cyan}>Configuración de Diana</h3>
-
-          <button
-            onClick={() => setViewMode(viewMode === "floating" ? "full" : "floating")}
-            style={{ ...styles.ghostButton, width: "100%", marginBottom: "12px" }}
-          >
-            {viewMode === "floating" ? "🖥️ Cambiar a pantalla completa" : "🪟 Cambiar a modo flotante"}
-          </button>
-
-          <label>Color de piel</label>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px", marginTop: "10px" }}>
-            {Object.entries(avatars).map(([tone, img]) => (
-              <button key={tone} onClick={() => setSkinTone(tone)} style={styles.ghostButton}>
-                <img
-                  src={img}
-                  alt={tone}
-                  style={{ width: "100%", height: "85px", objectFit: "cover", borderRadius: "10px" }}
-                />
-                {tone}
-              </button>
-            ))}
-          </div>
-
-          <h4 style={styles.cyan}>Tema</h4>
-          <select
-            value={theme}
-            onChange={(e) => setTheme(e.target.value)}
-            style={{ width: "100%", padding: "12px", ...styles.input }}
-          >
-            <option>BBVA Premium</option>
-            <option>Oscuro Profesional</option>
-            <option>Turquesa Tecnológico</option>
-            <option>Púrpura Creativo</option>
-            <option>Claro</option>
-          </select>
-        </div>
-      )}
-
-      <div className="diana-layout" style={styles.page}>
-        <aside className="diana-sidebar" style={styles.sidebar}>
-          <div style={{ display: "flex", gap: "14px", alignItems: "center" }}>
-            <img
-              src={avatar}
-              alt="Diana"
-              style={{ width: "64px", height: "64px", borderRadius: "20px", objectFit: "cover" }}
-            />
-            <div>
-              <h2 style={{ margin: 0, color: currentTheme.accent }}>Asistente Diana</h2>
-              <p style={{ margin: "4px 0", color: "#94a3b8" }}>Copiloto BBVA</p>
-            </div>
-          </div>
-
-          <div style={{ marginTop: "28px", display: "grid", gap: "12px" }}>
-            {[
-              "💬 Chat",
-              "🏠 Inicio",
-              "📚 Conocimiento",
-              "📘 Guías paso a paso",
-              "⚡ Generadores",
-              "🔐 IAM / Accesos",
-              "🧾 Jira / Helix",
-              "🖥️ VPN / Citrix",
-              "🚨 Impedimentos",
-              "📊 Analysis 2.0"
-            ].map((item) => (
-              <div key={item} style={styles.ghostButton}>
-                {item}
-              </div>
-            ))}
-
-            <h3 style={styles.cyan}>🕘 Historial</h3>
-            {chatHistory.length === 0 ? (
-              <p style={{ color: "#94a3b8", fontSize: "13px" }}>Aún no hay conversaciones.</p>
-            ) : (
-              chatHistory.slice(0, 5).map((item, index) => (
-                <div key={index} style={{ ...styles.ghostButton, fontSize: "12px" }}>
-                  <strong>{item.titulo}</strong>
-                  <br />
-                  <span style={{ color: "#94a3b8" }}>
-                    {item.proceso} · {item.fecha}
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
-        </aside>
-
-        <main className="diana-main" style={styles.main}>
-          {visualGuide && (
-            <div
-              style={{
-                position: "fixed",
-                top: "90px",
-                right: "430px",
-                width: "560px",
-                maxHeight: "82vh",
-                overflowY: "auto",
-                zIndex: 997,
-                ...styles.card
-              }}
-            >
-              <button
-                onClick={() => setVisualGuide(null)}
-                style={{
-                  float: "right",
-                  background: "transparent",
-                  color: currentTheme.text,
-                  border: "none",
-                  fontSize: "24px",
-                  cursor: "pointer"
-                }}
-              >
-                ×
-              </button>
-
-              <h2 style={styles.cyan}>📘 {visualGuide.titulo}</h2>
-              <p>{visualGuide.descripcion}</p>
-
-              <div
-                style={{
-                  padding: "12px",
-                  borderRadius: "16px",
-                  background: "#0b2747",
-                  border: `1px solid ${currentTheme.accent}`,
-                  color: "white"
-                }}
-              >
-                <strong style={styles.cyan}>
-                  Paso {visualStep + 1} de {visualGuide.pasos.length}
-                </strong>
-                <p>{visualGuide.pasos[visualStep].texto}</p>
-
-                <iframe
-                  src={visualGuide.pasos[visualStep].pdf}
-                  title="Demostración PDF"
-                  style={{
-                    width: "100%",
-                    height: "420px",
-                    borderRadius: "16px",
-                    border: `2px solid ${currentTheme.accent}`,
-                    marginTop: "10px",
-                    background: "white"
-                  }}
-                />
-              </div>
-
-              <div
-                style={{
-                  marginTop: "16px",
-                  padding: "14px",
-                  borderRadius: "16px",
-                  background: "#061428",
-                  border: `1px solid ${currentTheme.accent}`,
-                  color: "white"
-                }}
-              >
-                <strong style={styles.cyan}>🤖 ¿Tienes dudas sobre este paso?</strong>
-                <p style={{ color: "#94a3b8", fontSize: "13px" }}>
-                  Escríbeme y con gusto te ayudo.
-                </p>
-
-                <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
-                  <input
-                    value={visualQuestion}
-                    onChange={(e) => setVisualQuestion(e.target.value)}
-                    placeholder="Escribe tu mensaje..."
-                    style={{ flex: 1, padding: "12px", ...styles.input }}
-                  />
-                  <button onClick={() => send(visualQuestion)} style={styles.button}>
-                    ➤
-                  </button>
-                </div>
-              </div>
-
-              <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
-                <button onClick={() => setVisualStep(Math.max(visualStep - 1, 0))} style={styles.ghostButton}>
-                  ← Anterior
-                </button>
-                <button
-                  onClick={() => setVisualStep(Math.min(visualStep + 1, visualGuide.pasos.length - 1))}
-                  style={styles.button}
-                >
-                  Siguiente →
-                </button>
-              </div>
-            </div>
-          )}
-
-          <section>
-            <div style={{ ...styles.card, marginBottom: "22px" }}>
-              <div className="diana-hero" style={{ display: "flex", gap: "22px", alignItems: "center" }}>
-                <img
-                  src={avatar}
-                  alt="Diana avatar"
-                  style={{
-                    width: "180px",
-                    height: "180px",
-                    borderRadius: "50%",
-                    objectFit: "cover",
-                    boxShadow: `0 0 45px ${currentTheme.glow}`,
-                    ...pulseAvatar
-                  }}
-                />
-                <div>
-                  <h1 style={{ fontSize: "44px", margin: 0 }}>
-                    👋 Hola, soy <span style={styles.cyan}>Diana</span>
-                  </h1>
-                  <p style={{ fontSize: "18px", color: "#cbd5e1" }}>
-                    Tu asistente inteligente BBVA para procesos, accesos, soporte y generación automática.
-                  </p>
-                  <div style={{ color: "#86efac" }}>● Diana Online</div>
-                </div>
-              </div>
-            </div>
-
-            <div style={{ ...styles.card, height: "520px", overflowY: "auto" }}>
-              {messages.map((m, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    display: "flex",
-                    justifyContent: m.role === "user" ? "flex-end" : "flex-start",
-                    marginBottom: "18px"
-                  }}
-                >
-                  <div
-                    style={{
-                      maxWidth: "78%",
-                      padding: "18px",
-                      borderRadius: "22px",
-                      background: m.role === "user" ? "#123d6b" : "#031525",
-                      border: `1px solid ${currentTheme.accent}`,
-                      color: "white"
-                    }}
-                  >
-                    <strong style={styles.cyan}>{m.role === "user" ? "Usuario" : "🤖 Diana"}</strong>
-                    <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", lineHeight: "1.6" }}>
-                      {m.text}
-                    </pre>
-
-                    {m.role === "diana" && !guideActive && !m.guide && !m.text.includes("Modo guía activado") && (
-                      <button onClick={startGuide} style={styles.button}>
-                        Da click si deseas que te guíe →
-                      </button>
-                    )}
-
-                    {m.role === "diana" && guideActive && m.guide && (
-                      <button onClick={() => nextGuideStep()} style={styles.button}>
-                        Siguiente paso →
-                      </button>
-                    )}
-
-                    {m.role === "diana" &&
-                      guideActive &&
-                      m.guide &&
-                      m.text.includes("También puedo generarte los correos para ambos") && (
-                        <button
-                          onClick={() => send("Genera el de ambos")}
-                          style={{ ...styles.ghostButton, marginTop: "10px" }}
-                        >
-                          📧 ¿Quieres que te genere el de ambos?
-                        </button>
-                      )}
-
-                    {m.role === "diana" && (
-                      <button
-                        onClick={() => copiarTexto(m.text)}
-                        style={{ ...styles.ghostButton, marginTop: "10px" }}
-                      >
-                        📋 Copiar respuesta
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-
-              {isTyping && (
-                <div
-                  style={{
-                    maxWidth: "260px",
-                    padding: "14px 18px",
-                    borderRadius: "18px",
-                    background: "#031525",
-                    border: `1px solid ${currentTheme.accent}`,
-                    color: "#cbd5e1"
-                  }}
-                >
-                  🤖 Diana está escribiendo...
-                </div>
-              )}
-            </div>
-
-            <div style={{ display: "flex", gap: "12px", marginTop: "18px" }}>
-              <label style={{ ...styles.ghostButton, display: "inline-block", cursor: "pointer" }}>
-                📎 Adjuntar
-                <input type="file" multiple onChange={handleFileUpload} style={{ display: "none" }} />
-              </label>
-
-              <input
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") send();
-                }}
-                placeholder="Escribe tu mensaje..."
-                style={{ flex: 1, padding: "18px", ...styles.input }}
-              />
-
-              <button onClick={() => send()} style={styles.button}>
-                Enviar
-              </button>
-            </div>
-          </section>
-          
-            <div style={{ ...styles.card, marginBottom: "18px" }}>
-              <h3 style={styles.cyan}>⚡ Acciones rápidas</h3>
-              <div style={{ display: "grid", gap: "10px" }}>
-                {quickActions.map((action) => (
-                  <button key={action} onClick={() => send(action)} style={styles.ghostButton}>
-                    {action}
-                  </button>
-                ))}
-
-                <button onClick={() => abrirGuiaVisual("teradata")} style={styles.ghostButton}>
-                  🖼️ Ver guía visual Teradata
-                </button>
-                <button onClick={() => abrirGuiaVisual("vpn")} style={styles.ghostButton}>
-                  🖼️ Ver guía visual VPN
-                </button>
-                <button onClick={() => abrirGuiaVisual("iam")} style={styles.ghostButton}>
-                  🖼️ Ver guía visual IAM
-                </button>
-                <button onClick={() => openLink("vpn")} style={styles.ghostButton}>
-                  📘 Abrir guía VPN
-                </button>
-                <button onClick={() => openLink("teradata")} style={styles.ghostButton}>
-                  📘 Abrir manual Teradata
-                </button>
-                <button onClick={() => openLink("dml")} style={styles.ghostButton}>
-                  📄 Abrir formato DML
-                </button>
-              </div>
-            </div>
-
-            <div style={{ ...styles.card, marginBottom: "18px" }}>
-              <h3 style={styles.cyan}>📌 Generadores</h3>
-              {["Correo VoBo", "Comentario Helix", "Historia Jira", "Formato DML", "Plantilla IAM"].map((g) => (
-                <button
-                  key={g}
-                  onClick={() => send(g)}
-                  style={{ ...styles.ghostButton, marginBottom: "8px", width: "100%" }}
-                >
-                  {g}
-                </button>
-              ))}
-            </div>
-
-            <div style={{ ...styles.card, marginBottom: "18px" }}>
-              <h3 style={styles.cyan}>📂 Archivos adjuntos</h3>
-
-              {pdfText && (
-                <div
-                  style={{
-                    marginTop: "12px",
-                    padding: "12px",
-                    borderRadius: "14px",
-                    background: "#061428",
-                    border: `1px solid ${currentTheme.accent}`,
-                    whiteSpace: "pre-wrap",
-                    color: "white"
-                  }}
-                >
-                  {pdfText}
-                </div>
-              )}
-
-              {imageAnalysis && (
-                <div
-                  style={{
-                    marginTop: "12px",
-                    padding: "12px",
-                    borderRadius: "14px",
-                    background: "#061428",
-                    border: `1px solid ${currentTheme.accent}`,
-                    whiteSpace: "pre-wrap",
-                    color: "white"
-                  }}
-                >
-                  {imageAnalysis}
-                </div>
-              )}
-
-              {uploadedFiles.length === 0 ? (
-                <p style={{ color: "#94a3b8" }}>No hay archivos cargados.</p>
-              ) : (
-                uploadedFiles.map((file, index) => (
-                  <a
-                    key={index}
-                    href={file.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      ...styles.ghostButton,
-                      display: "block",
-                      marginBottom: "8px",
-                      textDecoration: "none"
-                    }}
-                  >
-                    <strong>{file.nombre}</strong>
-                    <br />
-                    <span style={{ fontSize: "12px", color: "#94a3b8" }}>{file.tamaño}</span>
-                  </a>
-                ))
-              )}
-            </div>
-
-            <div style={styles.card}>
-              <h3 style={styles.cyan}>📊 Estado de servicios</h3>
-
-              {Object.entries(serviceStatus).map(([servicio, estado]) => {
-                const color = estado === "operativo" ? "#22c55e" : estado === "degradado" ? "#facc15" : "#ef4444";
-                const icono = estado === "operativo" ? "🟢" : estado === "degradado" ? "🟡" : "🔴";
-
-                return (
-                  <div
-                    key={servicio}
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      padding: "10px",
-                      marginBottom: "8px",
-                      borderRadius: "12px",
-                      background: "#0b2747",
-                      border: `1px solid ${color}`,
-                      color: "white"
-                    }}
-                  >
-                    <span style={{ textTransform: "uppercase" }}>{servicio}</span>
-                    <span style={{ color }}>
-                      {icono} {estado}
-                    </span>
-                  </div>
-                );
-              })}
-
-              {lastAction && (
-                <div
-                  style={{
-                    marginTop: "14px",
-                    padding: "12px",
-                    borderRadius: "14px",
-                    background: "rgba(56,189,248,.08)",
-                    border: `1px solid ${currentTheme.accent}`
-                  }}
-                >
-                  <strong style={styles.cyan}>Última acción:</strong>
-                  <br />
-                  {lastAction}
-                </div>
-              )}
-            </div>
-          </aside>
-        </main>
-      </div>
-    </>
-  );
-}
+      padding: "
