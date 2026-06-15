@@ -13,7 +13,6 @@ export default function App() {
   const [visualQuestion, setVisualQuestion] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
   const [lastAction, setLastAction] = useState(null);
-  const [manualSearch, setManualSearch] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [pdfText, setPdfText] = useState("");
   const [imageAnalysis, setImageAnalysis] = useState("");
@@ -998,12 +997,6 @@ Puedo ayudarte a:
     }
   ];
 
-  const manualesFiltrados = manuales.filter((m) =>
-    `${m.categoria} ${m.nombre} ${m.descripcion}`
-      .toLowerCase()
-      .includes(manualSearch.toLowerCase())
-  );
-
   const pulseAvatar = {
     animation: "pulseDiana 2.4s infinite ease-in-out"
   };
@@ -1439,30 +1432,7 @@ Puedo ayudarte a:
               </button>
             </div>
           </section>
-
-          <aside className="diana-right-panel">
-            <div style={{ ...styles.card, marginBottom: "18px" }}>
-              <h3 style={styles.cyan}>🔍 Buscador de manuales</h3>
-              <input
-                value={manualSearch}
-                onChange={(e) => setManualSearch(e.target.value)}
-                placeholder="Buscar VPN, IAM, Teradata..."
-                style={{ width: "100%", padding: "12px", marginBottom: "12px", boxSizing: "border-box", ...styles.input }}
-              />
-
-              {manualesFiltrados.map((manual) => (
-                <button
-                  key={manual.nombre}
-                  onClick={() => window.open(manual.link, "_blank", "noopener,noreferrer")}
-                  style={{ ...styles.ghostButton, marginBottom: "8px", width: "100%" }}
-                >
-                  <strong>{manual.nombre}</strong>
-                  <br />
-                  <span style={{ fontSize: "12px", color: "#94a3b8" }}>{manual.descripcion}</span>
-                </button>
-              ))}
-            </div>
-
+          
             <div style={{ ...styles.card, marginBottom: "18px" }}>
               <h3 style={styles.cyan}>⚡ Acciones rápidas</h3>
               <div style={{ display: "grid", gap: "10px" }}>
