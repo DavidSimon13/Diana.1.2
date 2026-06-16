@@ -556,6 +556,42 @@ Escríbeme qué necesitas y te guío paso a paso.`;
       return;
     }
 
+    if (intent === "helix") {
+  setIsTyping(true);
+
+  setTimeout(() => {
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "diana",
+        text: generarComentarioHelix()
+      }
+    ]);
+
+    setIsTyping(false);
+  }, 700);
+
+  return;
+}
+
+if (intent === "jira") {
+  setIsTyping(true);
+
+  setTimeout(() => {
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "diana",
+        text: generarTicketJira()
+      }
+    ]);
+
+    setIsTyping(false);
+  }, 700);
+
+  return;
+}
+
     if (guideActive) {
       setTimeout(() => {
         nextGuideStep(userText);
