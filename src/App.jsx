@@ -32,12 +32,18 @@ export default function App() {
   });
 
   const [contexto, setContexto] = useState({
-    procesoActual: null,
-    ultimoPaso: null,
-    usuario: null,
-    area: null,
-    ultimoGenerador: null
-  });
+  procesoActual: null,
+  pasoActual: null,
+  estadoVoBo: "pendiente",
+  estadoJira: "pendiente",
+  estadoHelix: "pendiente",
+  estadoCitrix: "pendiente",
+  licenciaValidada: false,
+  usuario: null,
+  area: null,
+  ultimoGenerador: null,
+  ultimaAccion: null
+});
 
   const [messages, setMessages] = useState([
     {
@@ -147,17 +153,57 @@ export default function App() {
   }
 
   function actualizarContexto(intent, texto) {
-    setContexto((prev) => ({
+  setContexto((prev) => {
+    const nuevo = {
       ...prev,
-      procesoActual: intent !== "general" ? intent : prev.procesoActual,
-      ultimoPaso: texto,
-      ultimoGenerador:
-        intent === "vobo" || intent === "dml" || intent === "jira" || intent === "helix"
-          ? intent
-          : prev.ultimoGenerador
-    }));
-  }
+      procesoActual:
+        intent !== "general" ? intent : prev.procesoActual,
+      ultimaAccion: texto
+    };
 
+    // TERADATA
+    if (intent === "teradata") {
+      nuevo.procesoActual = "teradata";
+      nuevo.pasoActual = "validacion-licencia";
+    }
+
+    // VOBO
+    if (
+      texto.toLowerCase().includes("vobo") ||
+      texto.toLowerCase().includes("vo.bo")
+    ) {
+      nuevo.estadoVoBo = "en-proceso";
+      nuevo.pasoActual = "vobo";
+    }
+
+    // JIRA
+    if (
+      texto.toLowerCase().includes("jira") ||
+      texto.toLowerCase().includes("ticket")
+    ) {
+      nuevo.estadoJira = "completado";
+      nuevo.pasoActual = "jira";
+    }
+
+    // HELIX
+    if (
+      texto.toLowerCase().includes("helix")
+    ) {
+      nuevo.estadoHelix = "completado";
+      nuevo.pasoActual = "helix";
+    }
+
+    // CITRIX
+    if (
+      texto.toLowerCase().includes("citrix")
+    ) {
+      nuevo.estadoCitrix = "completado";
+      nuevo.pasoActual = "citrix";
+    }
+
+    return nuevo;
+  });
+}
   function generarTicketJira() {
     return `🎫 Ticket Jira generado
 
@@ -1430,7 +1476,7 @@ Puedo ayudarte a:
                   🖼️ Ver guía visual Teradata
                 </button>
                 <button onClick={() => abrirGuiaVisual("vpn")} style={styles.ghostButton}>
-                  🖼️ Ver guía visual VPN
+                  🖼️ Ver guía visual Citrix
                 </button>
                 <button onClick={() => abrirGuiaVisual("iam")} style={styles.ghostButton}>
                   🖼️ Ver guía visual IAM
@@ -1562,6 +1608,55 @@ Puedo ayudarte a:
                   <br />
                   {lastAction}
                 </div>
+              )} 
+
+              {contexto.procesoActual && (
+               <div
+                 style={{
+                   marginTop: "14px",
+                   padding: "12px",
+                   borderRadius: "14px",
+                   background: "#061428",
+                   border: `1px solid ${currentTheme.accent}`
+                 }}
+                >
+                 <strong style={styles.cyan}>
+                   📋 Estado del proceso
+                 </strong>
+                 
+                 <br />
+                 <br />
+                 
+                 <strong>Proceso:</strong>
+                 <br />
+                 {contexto.procesoActual}
+                 
+                 <br />
+                 <br />
+                 
+                 <strong>Paso actual:</strong>
+                 <br />
+                 {contexto.pasoActual || "Pendiente"}
+                 
+                 <br />
+                 <br />
+                 
+                 <div>
+                   {contexto.estadoVoBo === "completado" ? "✅" : "⬜"} Vo.Bo.
+                 </div>
+                 
+                 <div>
+                   {contexto.estadoJira === "completado" ? "✅" : "⬜"} Jira
+                 </div>
+                 
+                 <div>
+                   {contexto.estadoHelix === "completado" ? "✅" : "⬜"} Helix
+                 </div>
+                 
+                 <div>
+                   {contexto.estadoCitrix === "completado" ? "✅" : "⬜"} Citrix
+                 </div>
+               </div>
               )}
             </div>
           </aside>
