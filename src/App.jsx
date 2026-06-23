@@ -933,8 +933,9 @@ Puedo ayudarte a:
         ]
       },
       vpn: {
-        titulo: "Conectividad / Citrix",
-        descripcion: "VPN es conectividad. Citrix permite acceso a entornos internos.",
+        titulo: "Acceso Teradata por Citrix",
+        descripcion:
+          "Guía para acceder a Teradata mediante Citrix DaaS.",
         pasos: [
           {
             texto: "Revisa la guía de acceso Citrix DaaS.",
@@ -1476,7 +1477,7 @@ Puedo ayudarte a:
                   🖼️ Ver guía visual Teradata
                 </button>
                 <button onClick={() => abrirGuiaVisual("vpn")} style={styles.ghostButton}>
-                  🖼️ Ver guía visual Citrix
+                  🖼️ Ver acceso Teradata por Citrix
                 </button>
                 <button onClick={() => abrirGuiaVisual("iam")} style={styles.ghostButton}>
                   🖼️ Ver guía visual IAM
