@@ -1,6 +1,3 @@
-Aquí tienes el código completo con la actualización del botón para abrir la guía Citrix:
-
-```jsx
 import React, { useState } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfjsWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
